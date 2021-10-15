@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xpiwit>
+    <pipeline>
+        <item item_id="item_0001">
+            <name>ImageReader</name>
+            <description>Reads image from disk</description>
+            <input number_images="1" number_meta="0">
+                <image item_id_ref="cmd" number_of_output="0"/>
+            </input>
+            <output number_images="1" number_meta="0">
+                <image number="1"/>
+            </output>
+            <arguments>
+                <parameter key="WriteResult" value="0" type="3" description="Write output to disk"/>
+                <parameter key="WriteMetaData" value="1" type="3" description="Write meta data to disk"/>
+                <parameter key="MaxThreads" value="-1" type="2" description="Define the maximum number of concurrent threads. Setting it to -1 uses all available cores (default)."/>
+                <parameter key="Compression" value="1" type="3" description="If set to 1, compression is used for file saving."/>
+                <parameter key="Precision" value="16" type="2" description="Switch between uint8 and uint16 result image types."/>
+                <parameter key="UseSeriesReader" value="0" type="3" description="Combine separate 2D images to one 3D stack. Drag&amp;drop first file of the series and substitute the series index by %0nd, with n being the number of digits."/>
+                <parameter key="SeriesMinIndex" value="0" type="2" description="Start index for the series reader"/>
+                <parameter key="SeriesMaxIndex" value="499" type="2" description="End index for the series reader"/>
+                <parameter key="SeriesIncrement" value="1" type="2" description="Index increment for the series reader"/>
+                <parameter key="SpacingX" value="1" type="1" description="Original spacing in the first dimension"/>
+                <parameter key="SpacingY" value="1" type="1" description="Original spacing in the second dimension"/>
+                <parameter key="SpacingZ" value="1" type="1" description="Original spacing in the third dimension"/>
+                <parameter key="InputMinimumValue" value="0" type="1" description="Minimum intensity value of the input image. Set to -1 for auto detection"/>
+                <parameter key="InputMaximumValue" value="65535" type="1" description="Maximum intensity value of the input image. Set to -1 for auto detection"/>
+            </arguments>
+        </item>
+        <item item_id="item_0005">
+            <name>MorphologicalWatershedFromMarkersImageFilter</name>
+            <description>Calculates the watershed transform of the input image based on a marker image.</description>
+            <input number_images="2" number_meta="0">
+                <image item_id_ref="item_0003" number_of_output="1" type_number="2"/>
+                <image item_id_ref="item_0004" number_of_output="1" type_number="2"/>
+            </input>
+            <output number_images="1" number_meta="0">
+                <image number="1"/>
+            </output>
+            <arguments>
+                <parameter key="WriteResult" value="0" type="3" description="Write output to disk"/>
+                <parameter key="WriteMetaData" value="1" type="3" description="Write meta data to disk"/>
+                <parameter key="MaxThreads" value="-1" type="2" description="Define the maximum number of concurrent threads. Setting it to -1 uses all available cores (default)."/>
+                <parameter key="Compression" value="1" type="3" description="If set to 1, compression is used for file saving."/>
+                <parameter key="Precision" value="16" type="2" description="Switch between uint8 and uint16 result image types."/>
+                <parameter key="MarkWatershedLine" value="0" type="3" description="If enabled, watershed lines are highlighted by zero values."/>
+                <parameter key="FullyConnected" value="1" type="3" description="If enabled 8-neighborhood (2D) or 27-neighborhood (3D) is used."/>
+            </arguments>
+        </item>
+        <item item_id="item_0002">
+            <name>ImageReader</name>
+            <description>Reads image from disk</description>
+            <input number_images="1" number_meta="0">
+                <image item_id_ref="cmd" number_of_output="1"/>
+            </input>
+            <output number_images="1" number_meta="0">
+                <image number="1"/>
+            </output>
+            <arguments>
+                <parameter key="WriteResult" value="0" type="3" description="Write output to disk"/>
+                <parameter key="WriteMetaData" value="1" type="3" description="Write meta data to disk"/>
+                <parameter key="MaxThreads" value="-1" type="2" description="Define the maximum number of concurrent threads. Setting it to -1 uses all available cores (default)."/>
+                <parameter key="Compression" value="1" type="3" description="If set to 1, compression is used for file saving."/>
+                <parameter key="Precision" value="16" type="2" description="Switch between uint8 and uint16 result image types."/>
+                <parameter key="UseSeriesReader" value="0" type="3" description="Combine separate 2D images to one 3D stack. Drag&amp;drop first file of the series and substitute the series index by %0nd, with n being the number of digits."/>
+                <parameter key="SeriesMinIndex" value="0" type="2" description="Start index for the series reader"/>
+                <parameter key="SeriesMaxIndex" value="499" type="2" description="End index for the series reader"/>
+                <parameter key="SeriesIncrement" value="1" type="2" description="Index increment for the series reader"/>
+                <parameter key="SpacingX" value="1" type="1" description="Original spacing in the first dimension"/>
+                <parameter key="SpacingY" value="1" type="1" description="Original spacing in the second dimension"/>
+                <parameter key="SpacingZ" value="1" type="1" description="Original spacing in the third dimension"/>
+                <parameter key="InputMinimumValue" value="0" type="1" description="Minimum intensity value of the input image. Set to -1 for auto detection"/>
+                <parameter key="InputMaximumValue" value="65535" type="1" description="Maximum intensity value of the input image. Set to -1 for auto detection"/>
+            </arguments>
+        </item>
+        <item item_id="item_0003">
+            <name>IntensityWindowingImageFilter</name>
+            <description>Rescales the image min to max to the specified range</description>
+            <input number_images="1" number_meta="0">
+                <image item_id_ref="item_0001" number_of_output="1" type_number="2"/>
+            </input>
+            <output number_images="1" number_meta="0">
+                <image number="1"/>
+            </output>
+            <arguments>
+                <parameter key="WriteResult" value="0" type="3" description="Write output to disk"/>
+                <parameter key="WriteMetaData" value="1" type="3" description="Write meta data to disk"/>
+                <parameter key="MaxThreads" value="-1" type="2" description="Define the maximum number of concurrent threads. Setting it to -1 uses all available cores (default)."/>
+                <parameter key="Compression" value="1" type="3" description="If set to 1, compression is used for file saving."/>
+                <parameter key="Precision" value="16" type="2" description="Switch between uint8 and uint16 result image types."/>
+                <parameter key="UseQuantiles" value="0.001" type="1" description="If &gt; 0, the value serves as quantile threshold."/>
+                <parameter key="InputMinimum" value="-1" type="1" description="The minimum value of the input image."/>
+                <parameter key="InputMaximum" value="-1" type="1" description="The maximum value of the input image."/>
+                <parameter key="OutputMinimum" value="0" type="1" description="The minimum value of the output image."/>
+                <parameter key="OutputMaximum" value="1" type="1" description="The maximum value of the output image."/>
+            </arguments>
+        </item>
+        <item item_id="item_0006">
+            <name>VolumeBasedRegionRejectionFilter</name>
+            <description>Extracts the region properties of the image</description>
+            <input number_images="1" number_meta="0">
+                <image item_id_ref="item_0005" number_of_output="1" type_number="2"/>
+            </input>
+            <output number_images="1" number_meta="0">
+                <image number="1"/>
+            </output>
+            <arguments>
+                <parameter key="WriteResult" value="1" type="3" description="Write output to disk"/>
+                <parameter key="WriteMetaData" value="1" type="3" description="Write meta data to disk"/>
+                <parameter key="MaxThreads" value="-1" type="2" description="Define the maximum number of concurrent threads. Setting it to -1 uses all available cores (default)."/>
+                <parameter key="Compression" value="1" type="3" description="If set to 1, compression is used for file saving."/>
+                <parameter key="Precision" value="16" type="2" description="Switch between uint8 and uint16 result image types."/>
+                <parameter key="BinaryInput" value="0" type="3" description="If input is binary, a label image is generated before extracting the region properties."/>
+                <parameter key="LabelOutput" value="1" type="3" description="Switch between geometry and statistics mode"/>
+                <parameter key="FullyConnected" value="1" type="3" description="Determines the connectivity model. Use FullyConnected = 1 for 8/26-neighborhood or to 0 for 4/6 neighborhood."/>
+                <parameter key="MinimumVolume" value="0" type="2" description="All regions with smaller volume are suppressed. E.g. helpful for noise suppression in the EDM-based seed detection."/>
+                <parameter key="MaximumVolume" value="50000" type="2" description="All regions with larger volume are suppressed. E.g. helpful for background suppression."/>
+            </arguments>
+        </item>
+        <item item_id="item_0004">
+            <name>IntensityWindowingImageFilter</name>
+            <description>Rescales the image min to max to the specified range</description>
+            <input number_images="1" number_meta="0">
+                <image item_id_ref="item_0002" number_of_output="1" type_number="2"/>
+            </input>
+            <output number_images="1" number_meta="0">
+                <image number="1"/>
+            </output>
+            <arguments>
+                <parameter key="WriteResult" value="0" type="3" description="Write output to disk"/>
+                <parameter key="WriteMetaData" value="1" type="3" description="Write meta data to disk"/>
+                <parameter key="MaxThreads" value="-1" type="2" description="Define the maximum number of concurrent threads. Setting it to -1 uses all available cores (default)."/>
+                <parameter key="Compression" value="1" type="3" description="If set to 1, compression is used for file saving."/>
+                <parameter key="Precision" value="16" type="2" description="Switch between uint8 and uint16 result image types."/>
+                <parameter key="UseQuantiles" value="-1" type="1" description="If &gt; 0, the value serves as quantile threshold."/>
+                <parameter key="InputMinimum" value="0" type="1" description="The minimum value of the input image."/>
+                <parameter key="InputMaximum" value="1" type="1" description="The maximum value of the input image."/>
+                <parameter key="OutputMinimum" value="0" type="1" description="The minimum value of the output image."/>
+                <parameter key="OutputMaximum" value="65535" type="1" description="The maximum value of the output image."/>
+            </arguments>
+        </item>
+    </pipeline>
+</xpiwit>

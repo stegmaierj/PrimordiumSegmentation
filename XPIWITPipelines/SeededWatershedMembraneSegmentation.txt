@@ -1,0 +1,9 @@
+--output C:/Users/stegmaier/Downloads/ProcessingKnaut/
+--input 0, X:/Data/KnautNYU_PrimordiumCellSegmentation/20210506_Stiching_EGFP_Caax-H2a-mCherry/Membranes/20210506_Stiching_EGFP_Caax-H2a-mCherry_t=100_c=00.tif, 3, float
+--input 1, X:/Projects/KnautNYU_PrimordiumCellSegmentation/2021_10_08/20210506_Stiching_EGFP_Caax-H2a-mCherry/Nuclei_Tracked/20210506_Stiching_EGFP_Caax-H2a-mCherry_t=100_c=01_GradientVectorFlowTrackingImageFilter_Out1_Tracked.tif, 3, float
+--xml I:/Projects/2021/KnautNYU_PrimordiumCellSegmentation/Software/SeededWatershedMembraneSegmentation.xml
+--seed 0
+--lockfile off
+--subfolder filterid, filtername
+--outputformat imagename, filtername
+--end

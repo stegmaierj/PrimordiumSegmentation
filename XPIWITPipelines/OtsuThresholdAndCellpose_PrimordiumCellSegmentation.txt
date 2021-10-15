@@ -1,0 +1,11 @@
+--output C:/Users/stegmaier/Downloads/ProcessingKnaut/
+--input 0, X:/Data/KnautNYU_PrimordiumCellSegmentation/20210715_Stiching_EGFP_Caax-H2a-mCherry_crop/Nuclei_Normalized/20210715_Stiching_EGFP_Caax-H2a-mCherry_crop_t=189_c=01.tif, 3, float
+--input 1, X:/Projects/KnautNYU_PrimordiumCellSegmentation/2021_08_28_SyntheticNuclei/Nuclei20210715_Segmentation/RawOutputs/pred1_20210715_Stiching_EGFP_Caax-H2a-mCherry_crop_t=189_c=01.tif, 3, float
+--input 2, X:/Projects/KnautNYU_PrimordiumCellSegmentation/2021_08_28_SyntheticNuclei/Nuclei20210715_Segmentation/RawOutputs/pred2_20210715_Stiching_EGFP_Caax-H2a-mCherry_crop_t=189_c=01.tif, 3, float
+--input 3, X:/Projects/KnautNYU_PrimordiumCellSegmentation/2021_08_28_SyntheticNuclei/Nuclei20210715_Segmentation/RawOutputs/pred3_20210715_Stiching_EGFP_Caax-H2a-mCherry_crop_t=189_c=01.tif, 3, float
+--xml I:/Projects/2021/KnautNYU_PrimordiumCellSegmentation/Software/OtsuThresholdAndCellpose_PrimordiumCellSegmentation.xml
+--seed 0
+--lockfile off
+--subfolder filterid, filtername
+--outputformat imagename, filtername
+--end
