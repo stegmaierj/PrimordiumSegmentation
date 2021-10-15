@@ -25,22 +25,17 @@ This step is only required if no pretrained models are available yet. The idea i
 
 2. Use XPIWIT (https://bitbucket.org/jstegmaier/xpiwit/downloads/) for performing the segmentation on the basis of a simple binary threshold that separates foreground and background and using the flow fields to perform the splitting of the nuclei. Make sure to use one of the latest versions, as the Cellpose3D support was only added recently. Load the XPIWIT pipeline `OtsuThresholdAndCellpose_PrimordiumCellSegmentation.sav`, specify the inputs in the XPIWITGUI and process the images to obtain the nucleus channel instance segmentation.
 
-## Segmenation Procedure
+3. Segmentation of the membrane channel is performed by using the nucleus segmentation as seeds and using a classical 3D watershed algorithm for the actual segmentation. The segmentation can either be performed before tracking (in case temporal information is irrelevant) or after tracking the nuclei (and potentially after a round of tracking correction). In both cases, use the XPIWIT pipeline `SeededWatershedMembraneSegmentation.sav`. The first expected input should be the raw membrane images and the second channel should be the corresponding segmentation of the current frame. Moreover, specify the output folder, where the final results should be written to.
 
-1. Compute deformations of the images in a backwards fashion, i.e., setting t-1 as the fixed image and t as the moving image. Can be performed automatically using elastix as implemented in the script PerformElastixRegistration.m
+4. To quantify the individual segments' properties you can use the script `ExtractRegionProps3D.m` by providing an input folder containing individual segmented images, where each object already has a unique id. The output folder will then contain `*.csv` files that contain the measurements for each object. The labels of each object are identical to the entries of the first row in the extracted csv and can therefore be used for lookup of the measurements for a specific object.
 
-2. Perform initial detection and segmentation on the original nuclei and membrane images. Use the XPIWIT pipelines NucleiEnhancementDeploy.xml (includes Otsu based foreground detection) or NucleiEnhancedDeployWithoutOtsu.xml (does not filter the detections, i.e., more reliable w.r.t. intensity variations)
-
-3. Perform the initial tracking based on the identified transformations from the registration as well as the detection/segmentation results. Initially, everything is tracked and later the masks of the maximum intensity projections are used to filter the desired tracks. Can be done with the script PerformIterativeSeedBasedNNTracking.m or PerformIterativeSegmentationBasedTracking.m to either perform the tracking using hierarchical clustering or using an extended NN method. Both methods operate in a backwards fashion.
-
-4. Open the initial raw track project trackedProject.prjz in SciXMiner and select only those tracks that intersect with the binarized maximum intensity projection in XY and XZ direction using the script "2_ReidentifyMeanIntensity.m".
-
-5. The newly generated output variable is then used by the script "3_CreateCleanedTrackedImages.m" to generate the nuclei segmentation images only for the selected tracks.
-
-6. Finally, the tracked nuclei images are used to propagate the labels of the nuclei to the membrane segmentation that is obtained with Dennis' Cellpose approach. This can be done with the script "4_ConvertSegmentationTiffsToTracked.m".
 
 ## Tracking
+1. Perform tracking on the segmentation images of the nucleus channel. This can be accomplished with the script `PerformIterativeSegmentationBasedTracking.m`. The script requires the input folder containing the segmentation images, a folder containing the transformations identified during the preprocessing (optional) and an output folder to write the results to. Results are 3D tiffs as well, where each of the cells has a consistent label over time for all frames it was properly tracked.
 
+2. To apply the tracking results to the membrane channel, see point 3 of the segmentation section.
+
+3. Refer to the next section for information on how to perform track correction using the Fiji plugin Mastodon.
 
 ## Track Correction
 1. Create BigDataViewer representation of the image data. Open up the raw image sequence in Fiji as a hyperstack. If using individual `*.tif` files, just drag and drop the folder containing all frame images to Fiji and import the entire series. To convert the currently open hyperstack to the BigDataViewer (BDV) format, use the BigDataViewer plugin from `Plugins -> BigDataViewer -> Export Current Image as XML/HDF5` and remember the save location. The XML file  will later be needed to setup the Mastodon project.
