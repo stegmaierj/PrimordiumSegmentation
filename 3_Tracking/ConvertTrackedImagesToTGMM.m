@@ -29,14 +29,23 @@ addpath('../ThirdParty')
 addpath('../ThirdParty/saveastiff_4.3');
 
 %% specify the output directory
-outputFolder = uigetdir('C:\Users\stegmaier\Downloads\TGMM\', 'Please select a directory to store the results to ...');
-outputFolder = [outputFolder filesep];
-if (~isfolder(outputFolder)); mkdir(outputFolder); end
+outputRoot = uigetdir('C:\Users\stegmaier\Downloads\GlobalOutputTest\', 'Please select the output root directory ...');
+outputRoot = [outputRoot filesep];
+if (~isfolder(outputRoot)); mkdir(outputRoot); end
+
+%% specify the output directory
+outputFolderTGMM = [outputRoot 'TGMM' filesep];
+if (~isfolder(outputFolderTGMM)); mkdir(outputFolderTGMM); end
 
 %% specify the input directory
-inputFolder = uigetdir('X:\Projects\KnautNYU_PrimordiumCellSegmentation\2021_10_08\20210506_Stiching_EGFP_Caax-H2a-mCherry\Nuclei_Tracked\', 'Please select the input directory (should contain tracked 3D tiffs for each frame)');
-inputFolder = [inputFolder filesep];
-inputFiles = dir([inputFolder '*.tif']);
+inputFolderTrackedNuclei = [outputRoot 'Nuclei_Tracked' filesep];
+if (~isfolder(inputFolderTrackedNuclei))
+    inputFolderTrackedNuclei = uigetdir('X:\Projects\KnautNYU_PrimordiumCellSegmentation\2021_10_08\20210506_Stiching_EGFP_Caax-H2a-mCherry\Nuclei_Tracked\', 'Please select the input directory (should contain tracked 3D tiffs for each frame)');
+    inputFolderTrackedNuclei = [inputFolderTrackedNuclei filesep];
+else
+   disp(['Using tracked nuclei located in ' inputFolderTrackedNuclei]); 
+end
+inputFiles = dir([inputFolderTrackedNuclei '*.tif']);
 
 %% define z-spacing (only needed if isotropic images should be processed).
 zspacing = 1; %% 0.325 x 0.325 x 0.8 µm 
@@ -58,7 +67,7 @@ previousLabels = [];
 for i=1:length(inputFiles)
     
     %% read the current input image
-    currentImage = loadtiff([inputFolder inputFiles(i).name]);
+    currentImage = loadtiff([inputFolderTrackedNuclei inputFiles(i).name]);
     
     %% potentially resize the input image in z if needed
     if (zspacing ~= 1)
@@ -113,7 +122,7 @@ for i=1:length(inputFiles)
     end
 
     %% write the current result file
-    outputFileName = [outputFolder strrep(inputFiles(i).name, '.tif', '_RegionProps.xml')];
+    outputFileName = [outputFolderTGMM strrep(inputFiles(i).name, '.tif', '_RegionProps.xml')];
     xmlwrite(outputFileName,docNode);
     
     %% store the previous labels to see if there's a predecessor available    

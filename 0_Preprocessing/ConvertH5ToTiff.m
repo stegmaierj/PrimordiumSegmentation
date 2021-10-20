@@ -25,20 +25,21 @@
 %%
 
 %% add lib for fast tiff writing
-addpath('../ThirdParty/saveastiff_4_3/');
+addpath('../ThirdParty/saveastiff_4.3/');
 
 %% specify the input file
-inputFile = uigetfile('*.h5', 'Select input file in H5 format'); %% Example: D:\20210715_Stiching_EGFP Caax-H2a-mCherry_crop.h5
+[inputFile, inputFolder] = uigetfile('*.h5', 'Select input file in H5 format'); %% Example: D:\20210715_Stiching_EGFP Caax-H2a-mCherry_crop.h5
+inputFile = [inputFolder inputFile];
 inputInfo = h5info(inputFile);
 [path, fileName, ext] = fileparts(inputFile);
 
 %% specify the output path
-outputRoot = uigetdir('X:\Data\KnautNYU_PrimordiumCellSegmentation\20210715_Stiching_EGFP Caax-H2a-mCherry_crop\', 'Please specify the output directory for the extracted frames');
+outputRoot = uigetdir('C:\Users\stegmaier\Downloads\GlobalOutputTest\', 'Please specify the output directory for the extracted frames');
 outputRoot = [outputRoot filesep];
 outputChannel1 = [outputRoot 'Membranes\'];
 outputChannel2 = [outputRoot 'Nuclei\'];
-mkdir(outputChannel1);
-mkdir(outputChannel2);
+if (~isfolder(outputChannel1)); mkdir(outputChannel1); end
+if (~isfolder(outputChannel2)); mkdir(outputChannel2); end
 
 %% get the number of time points and channels
 numTimePoints = length(inputInfo.Groups)-1;

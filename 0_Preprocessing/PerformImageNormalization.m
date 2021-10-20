@@ -30,8 +30,15 @@ addpath('../ThirdParty/saveastiff_4.3');
 %% specify input and output folders
 inputFolder = uigetdir('X:\Data\KnautNYU_PrimordiumCellSegmentation\20210715_Stiching_EGFP_Caax-H2a-mCherry_crop\Membranes\', 'Specify the input folder containing the images to normalize in tiff format.');
 inputFolder = [inputFolder filesep];
-outputFolder = uigetdir('X:\Data\KnautNYU_PrimordiumCellSegmentation\20210715_Stiching_EGFP_Caax-H2a-mCherry_crop\Membranes_Normalized\', 'Specify the output path to write the normalized images to.');
-outputFolder = [outputFolder filesep]
+
+%% get the output directory
+outputRoot = uigetdir('C:\Users\stegmaier\Downloads\GlobalOutputTest\', 'Specify output directory for the identified transformations.');
+outputRoot = [outputRoot filesep];
+
+%% create the output folder for the normalized images
+splitString = strsplit(inputFolder, filesep);
+outputFolder = [outputRoot splitString{end-1} '_Normalized' filesep];
+if (~isfolder(outputFolder)); mkdir(outputFolder); end
 
 %% change the following value according to the quantile you want to use for normalization
 quantileValue = 0.001;

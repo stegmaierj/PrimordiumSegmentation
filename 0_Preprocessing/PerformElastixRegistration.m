@@ -44,8 +44,15 @@ end
 %% setup input output directories
 inputDir = uigetdir('X:\Data\KnautNYU_PrimordiumCellSegmentation\20210506_Stiching_EGFP_Caax-H2a-mCherry\Nuclei\', 'Select input folder containing the raw images of the nuclei.');
 inputDir = [inputDir filesep];
-transformationDir = uigetdir('D:\ScieboDrive\Projects\2021\KnautNYU_PrimordiumCellSegmentation\Processing\Transformations\', 'Specify output directory for the identified transformations.');
-transformationDir = [transformationDir filesep];
+
+%% get the output directory
+outputRoot = uigetdir('C:\Users\stegmaier\Downloads\GlobalOutputTest\', 'Specify output directory for the identified transformations.');
+outputRoot = [outputRoot filesep];
+
+%% create transformations dir
+transformationDir = [outputRoot 'Transformations' filesep];
+if (~isfolder(transformationDir)); mkdir(transformationDir); end
+
 registrationParameters = [pwd filesep 'parameters_BSpline.txt'];
 if (~isfile(registrationParameters))
     uigetfile('*.txt', 'Select the transformation parameters file name.');
