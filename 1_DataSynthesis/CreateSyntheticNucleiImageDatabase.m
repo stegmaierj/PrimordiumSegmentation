@@ -29,15 +29,20 @@ addpath('../ThirdParty/saveastiff_4.3/');
 
 %% get the input folders
 nucleiFolder = uigetdir('/Users/jstegmaier/ScieboDrive/Projects/2021/KnautNYU_PrimordiumCellSegmentation/Data/SyntheticNuclei/Segmentation/', 'Please select the input folder containing 3D images with segmented nuclei.');
+nucleiFolder = [nucleiFolder filesep];
 rawImageFolder = uigetdir('/Users/jstegmaier/ScieboDrive/Projects/2021/KnautNYU_PrimordiumCellSegmentation/Data/SyntheticNuclei/Raw/', 'Please select the raw image folder containing nuclei.');
+rawImageFolder = [rawImageFolder filesep];
 
 %%%%%%%% PARAMETERS %%%%%%%%
 %% binary threshold used for identifying the background.
 %% potentially needs to be adjusted depending on the input image.
-intensityThreshold = 800;
+intensityThreshold = -1;
 
 %% window size used for estimating mean and standard deviation
-windowSize = 5;
+windowSize = 3;
+
+%% set the number of nuclei per image
+numNucleiPerImage = 100;
 
 %% padding in pixel used for cropping the nuclei templates
 regionPadding = 4;
@@ -56,25 +61,35 @@ for f = 1:length(nucleiFiles)
 
     %% load segmentation and raw images
     nucleiImage = loadtiff([nucleiFolder nucleiFiles(f).name]);
-    rawImage = double(loadtiff([rawImageFolder rawFiles(f).name]));
+    rawImage = single(loadtiff([rawImageFolder rawFiles(f).name]));
     imageSize = size(rawImage);
 
     %% obtain the background image to assess the background characteristics
-    maskImage = rawImage > intensityThreshold;
+    if (intensityThreshold < 0)
+        %maskImage = imbinarize(rawImage / max(rawImage(:)), 'global');
+        maskImage = rawImage > quantile(rawImage(rawImage > 0), 0.9);
+    else
+        maskImage = rawImage > intensityThreshold;
+    end
 
     %% compute std. and mean images
-    stdImage = stdfilt(rawImage, true(windowSize, windowSize, windowSize));
-    meanImage = imfilter(rawImage, fspecial3('average', [windowSize , windowSize, windowSize]));
+    stdImage = single(stdfilt(rawImage, true(windowSize, windowSize, windowSize)));
+    meanImage = single(imfilter(rawImage, fspecial3('average', [windowSize , windowSize, windowSize])));
 
     %% compute background statistics
-    backgroundMean = mean(rawImage(~maskImage));
-    backgroundStd = std(rawImage(~maskImage));
+    backgroundMean = mean(rawImage(~maskImage & rawImage > 0));
+    backgroundStd = std(rawImage(~maskImage & rawImage > 0));
     
     %% extract the region props of the current image
     regionProps = regionprops(nucleiImage, 'Area', 'PixelIdxList', 'BoundingBox');
     
     %% add all valid nuclei to the database of potential objects
-    for i=1:length(regionProps)
+    selectedNuclei = 1:length(regionProps);
+    if (numNucleiPerImage > 0)
+        selectedNuclei = randperm(length(regionProps), numNucleiPerImage);
+    end
+    
+    for i=selectedNuclei
 
         %% skip empty entries
         if (regionProps(i).Area <= 0 || sum(nucleiImage(:) > 0) == 0)
@@ -102,7 +117,7 @@ for f = 1:length(nucleiFiles)
 
         %% increment counter for next object and show status
         currentIndex = currentIndex + 1;
-        disp(['Finished extracting ' num2str(currentIndex) ' / ' num2str(length(regionProps)) ' regions ...']);
+        disp(['Finished extracting ' num2str(currentIndex) ' / ' num2str(length(selectedNuclei)) ' regions ...']);
     end
 end
 

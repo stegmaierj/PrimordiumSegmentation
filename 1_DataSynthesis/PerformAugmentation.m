@@ -24,8 +24,12 @@
 %
 %%
 
-function [maskImage, meanImage, stdImage] = PerformAugmentation(maskImage, meanImage, stdImage)
+function [maskImage, meanImage, stdImage] = PerformAugmentation(maskImage, meanImage, stdImage, scaleFactor)
     
+    if (nargin < 4)
+        scaleFactor = 0.5;
+    end
+
     %% perform rotation
     angleX = rand * 360;
     angleY = rand * 360;
@@ -43,9 +47,9 @@ function [maskImage, meanImage, stdImage] = PerformAugmentation(maskImage, meanI
     stdImage = imrotate3(stdImage, angleZ, [0,0,1], 'linear', 'loose', 'FillValues', 0);
     
     %% perform scaling
-    scaleX = 1 + 0.5 * (rand);
-    scaleY = 1 + 0.5 * (rand);
-    scaleZ = 1 + 0.5 * (rand);
+    scaleX = 1 + scaleFactor * (rand - 0.5);
+    scaleY = 1 + scaleFactor * (rand - 0.5);
+    scaleZ = 1 + scaleFactor * (rand - 0.5);
     
     maskImage = imresize3(maskImage, round(size(maskImage) .* [scaleX, scaleY, scaleZ]), 'nearest');
     meanImage = imresize3(meanImage, round(size(meanImage) .* [scaleX, scaleY, scaleZ]), 'linear');

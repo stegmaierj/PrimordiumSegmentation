@@ -39,6 +39,27 @@ safetyBorder = 20;              %% mask border that ensures no objects are posit
 numImages = 300;                %% number of images that should be created
 minNumObjects = 50;             %% minimum number of objects per image
 additionalObjects = 200;        %% a random number <= this number is generated and added to the minimum number of objects
+
+gaussianSigmaBefore = 2.0;            %% smoothing to be applied after the images were generated (used 0.4 for NYU data)
+gaussianWindowBefore = max(1, round(gaussianSigmaBefore)) * 3 + 1;  %% Gaussian window, defaulting to 3*sigma (i.e., covering 99% of the values)
+
+gaussianSigmaAfter = 1;            %% smoothing to be applied after the images were generated (used 0.4 for NYU data)
+gaussianWindowAfter = max(1, round(gaussianSigmaAfter)) * 3 + 1;  %% Gaussian window, defaulting to 3*sigma (i.e., covering 99% of the values)
+
+if (mod(gaussianWindowBefore, 2) == 0)
+    gaussianWindowBefore = gaussianWindowBefore + 1;
+end
+
+if (mod(gaussianWindowAfter, 2) == 0)
+    gaussianWindowAfter = gaussianWindowAfter + 1;
+end
+
+useGaussianBeforeNoise = true;
+useGaussianAfterNoise = true;
+
+zscale = 5;
+scaleFactor = 0.1;
+
 %%%%%%%% PARAMETERS %%%%%%%%
 
 %% get the output path
@@ -83,6 +104,14 @@ parfor f=1:numImages
         currentMeanSnippet = nucleiDataBase(currentTemplateId).meanImage;
         currentStdSnippet = nucleiDataBase(currentTemplateId).stdImage;
         
+        %% scale the images if anisotropy should be compensated
+        if (zscale ~= 1)
+           snippetSize = size(currentMaskSnippet);
+           currentMaskSnippet = imresize3(currentMaskSnippet, [snippetSize(1), snippetSize(2), round(snippetSize(3) * zscale)], 'nearest');
+           currentMeanSnippet = imresize3(currentMeanSnippet, [snippetSize(1), snippetSize(2), round(snippetSize(3) * zscale)]);
+           currentStdSnippet = imresize3(currentStdSnippet, [snippetSize(1), snippetSize(2), round(snippetSize(3) * zscale)]);
+        end
+        
         %% prepare the mask and statistics snippets for augmentation
         currentMaskSnippet = imclose(currentMaskSnippet((regionPadding+1):(end-regionPadding), (regionPadding+1):(end-regionPadding), (regionPadding+1):(end-regionPadding)) > 0, strel('sphere', 2));
         currentMeanSnippet = currentMeanSnippet((regionPadding+1):(end-regionPadding), (regionPadding+1):(end-regionPadding), (regionPadding+1):(end-regionPadding)) .* double(imdilate(currentMaskSnippet > 0, strel('sphere', 2)));
@@ -93,7 +122,7 @@ parfor f=1:numImages
         end
         
         %% perform augmentation, i.e., randomly rotate the snippet in 3D and stretch it randomly along the different axes
-        [currentMaskSnippet, currentMeanSnippet, currentStdSnippet] = PerformAugmentation(currentMaskSnippet, currentMeanSnippet, currentStdSnippet);
+        [currentMaskSnippet, currentMeanSnippet, currentStdSnippet] = PerformAugmentation(currentMaskSnippet, currentMeanSnippet, currentStdSnippet, scaleFactor);
         
         %% compute the current snippet size and get the region properties
         snippetSize = size(currentMaskSnippet);
@@ -134,8 +163,13 @@ parfor f=1:numImages
     end
     
     %% sample current image and ensure that the limits fit
+    if (useGaussianBeforeNoise == true)
+        meanImage = imfilter(meanImage, fspecial3('gaussian', gaussianWindowBefore, gaussianSigmaBefore), 'replicate');
+    end
     rawImage = meanImage + randn(imageSize) .* stdImage;
-    rawImage = imfilter(rawImage, fspecial3('gaussian', 3, 0.4));
+    if (useGaussianAfterNoise == true)
+        rawImage = imfilter(rawImage, fspecial3('gaussian', gaussianWindowAfter, gaussianSigmaAfter), 'replicate');
+    end
     rawImage(rawImage < 0) = 0;
     rawImage(rawImage > 65535) = 65535;
     
