@@ -24,32 +24,35 @@
 %
 %%
 
-function [maskImage, meanImage, stdImage] = PerformAugmentation(maskImage, meanImage, stdImage, scaleFactor)
+function [maskImage, meanImage, stdImage] = PerformAugmentation(maskImage, meanImage, stdImage, settings)
     
-    if (nargin < 4)
-        scaleFactor = 0.5;
-    end
-
     %% perform rotation
     angleX = rand * 360;
     angleY = rand * 360;
     angleZ = rand * 360;
-    maskImage = imrotate3(maskImage, angleX, [1,0,0], 'nearest', 'loose', 'FillValues', 0);
-    maskImage = imrotate3(maskImage, angleY, [0,1,0], 'nearest', 'loose', 'FillValues', 0);
-    maskImage = imrotate3(maskImage, angleZ, [0,0,1], 'nearest', 'loose', 'FillValues', 0);
     
-    meanImage = imrotate3(meanImage, angleX, [1,0,0], 'linear', 'loose', 'FillValues', 0);
-    meanImage = imrotate3(meanImage, angleY, [0,1,0], 'linear', 'loose', 'FillValues', 0);
-    meanImage = imrotate3(meanImage, angleZ, [0,0,1], 'linear', 'loose', 'FillValues', 0);
+    if (settings.rotateX == true)
+        maskImage = imrotate3(maskImage, angleX, [1,0,0], 'nearest', 'loose', 'FillValues', 0);
+        meanImage = imrotate3(meanImage, angleX, [1,0,0], 'linear', 'loose', 'FillValues', 0);
+        stdImage = imrotate3(stdImage, angleX, [1,0,0], 'linear', 'loose', 'FillValues', 0);
+    end
     
-    stdImage = imrotate3(stdImage, angleX, [1,0,0], 'linear', 'loose', 'FillValues', 0);
-    stdImage = imrotate3(stdImage, angleY, [0,1,0], 'linear', 'loose', 'FillValues', 0);
-    stdImage = imrotate3(stdImage, angleZ, [0,0,1], 'linear', 'loose', 'FillValues', 0);
+    if (settings.rotateY == true)
+        maskImage = imrotate3(maskImage, angleY, [0,1,0], 'nearest', 'loose', 'FillValues', 0);
+        meanImage = imrotate3(meanImage, angleY, [0,1,0], 'linear', 'loose', 'FillValues', 0);
+        stdImage = imrotate3(stdImage, angleY, [0,1,0], 'linear', 'loose', 'FillValues', 0);
+    end
+    
+    if (settings.rotateZ == true)
+        maskImage = imrotate3(maskImage, angleZ, [0,0,1], 'nearest', 'loose', 'FillValues', 0);
+        meanImage = imrotate3(meanImage, angleZ, [0,0,1], 'linear', 'loose', 'FillValues', 0);
+        stdImage = imrotate3(stdImage, angleZ, [0,0,1], 'linear', 'loose', 'FillValues', 0);
+    end
     
     %% perform scaling
-    scaleX = 1 + scaleFactor * (rand - 0.5);
-    scaleY = 1 + scaleFactor * (rand - 0.5);
-    scaleZ = 1 + scaleFactor * (rand - 0.5);
+    scaleX = 1 + settings.scaleFactor * (rand - 0.5);
+    scaleY = 1 + settings.scaleFactor * (rand - 0.5);
+    scaleZ = 1 + settings.scaleFactor * (rand - 0.5);
     
     maskImage = imresize3(maskImage, round(size(maskImage) .* [scaleX, scaleY, scaleZ]), 'nearest');
     meanImage = imresize3(meanImage, round(size(meanImage) .* [scaleX, scaleY, scaleZ]), 'linear');

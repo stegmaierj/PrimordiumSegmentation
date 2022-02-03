@@ -43,7 +43,7 @@ if (~isfolder(outputChannel2)); mkdir(outputChannel2); end
 
 %% get the number of time points and channels
 numTimePoints = length(inputInfo.Groups)-1;
-numChannels = 2;
+numChannels = 1;
 
 %% options for tiff writing
 clear options;
@@ -52,7 +52,7 @@ options.compress = 'lzw';
 
 %% iteratively extract all time points from the h5 file
 for t=1:numTimePoints
-    for c=1:2
+    for c=1:numChannels
         
         %% get the current frame
         currentImage = h5read(inputFile, sprintf('/t%03d/channel%d', t-1, c-1));

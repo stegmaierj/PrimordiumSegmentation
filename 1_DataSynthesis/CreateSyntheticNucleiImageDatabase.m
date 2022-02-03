@@ -28,7 +28,7 @@
 addpath('../ThirdParty/saveastiff_4.3/');
 
 %% get the input folders
-nucleiFolder = uigetdir('/Users/jstegmaier/ScieboDrive/Projects/2021/KnautNYU_PrimordiumCellSegmentation/Data/SyntheticNuclei/Segmentation/', 'Please select the input folder containing 3D images with segmented nuclei.');
+nucleiFolder = uigetdir('/Users/jstegmaier/ScieboDrive/Projects/2021/KnautNYU_PrimordiumCellSegmentation/Data/SyntheticNuclei/SegmentationCleaned/', 'Please select the input folder containing 3D images with segmented nuclei.');
 nucleiFolder = [nucleiFolder filesep];
 rawImageFolder = uigetdir('/Users/jstegmaier/ScieboDrive/Projects/2021/KnautNYU_PrimordiumCellSegmentation/Data/SyntheticNuclei/Raw/', 'Please select the raw image folder containing nuclei.');
 rawImageFolder = [rawImageFolder filesep];
@@ -50,7 +50,6 @@ regionPadding = 4;
 
 %% initialize the nuclei data base
 nucleiDataBase = struct();
-currentIndex = 1;
 
 %% parse input directories for valid files
 nucleiFiles = dir([nucleiFolder '*.tif']);
@@ -59,6 +58,8 @@ rawFiles = dir([rawImageFolder '*.tif']);
 %% add all templates found in the segmentation images to the nucleus data base
 for f = 1:length(nucleiFiles)
 
+    currentIndex = 1;
+    
     %% load segmentation and raw images
     nucleiImage = loadtiff([nucleiFolder nucleiFiles(f).name]);
     rawImage = single(loadtiff([rawImageFolder rawFiles(f).name]));
@@ -83,13 +84,22 @@ for f = 1:length(nucleiFiles)
     %% extract the region props of the current image
     regionProps = regionprops(nucleiImage, 'Area', 'PixelIdxList', 'BoundingBox');
     
-    %% add all valid nuclei to the database of potential objects
-    selectedNuclei = 1:length(regionProps);
-    if (numNucleiPerImage > 0)
-        selectedNuclei = randperm(length(regionProps), numNucleiPerImage);
+    validIndices = [];
+    for i=1:length(regionProps)
+        if (regionProps(i).Area > 0)
+            validIndices = [validIndices; i];
+        end
     end
     
-    for i=selectedNuclei
+    selectedNuclei = validIndices(randperm(length(validIndices), numNucleiPerImage));
+%     
+%     %% add all valid nuclei to the database of potential objects
+%     selectedNuclei = 1:length(regionProps);
+%     if (numNucleiPerImage > 0)
+%         selectedNuclei = randperm(length(regionProps), numNucleiPerImage);
+%     end
+    
+    for i=selectedNuclei'
 
         %% skip empty entries
         if (regionProps(i).Area <= 0 || sum(nucleiImage(:) > 0) == 0)
@@ -107,13 +117,13 @@ for f = 1:length(nucleiFiles)
         rangeZ = round(max(1, aabb(3)-regionPadding)):round(min(imageSize(3), aabb(3)+aabb(6)+regionPadding));
 
         %% specify output images
-        nucleiDataBase(currentIndex).rawImage = rawImage(rangeY, rangeX, rangeZ);
-        nucleiDataBase(currentIndex).maskImage = imclose(uint8(nucleiImage(rangeY, rangeX, rangeZ) == i), strel('sphere', 2));
-        nucleiDataBase(currentIndex).maskImage = imdilate(imgaussfilt3(nucleiDataBase(currentIndex).maskImage, 2) > 0.5, strel('sphere', 1));
-        nucleiDataBase(currentIndex).stdImage = stdImage(rangeY, rangeX, rangeZ);
-        nucleiDataBase(currentIndex).meanImage = meanImage(rangeY, rangeX, rangeZ);
-        nucleiDataBase(currentIndex).backgroundMean = backgroundMean;
-        nucleiDataBase(currentIndex).backgroundStd = backgroundStd;
+        nucleiDataBase(f, currentIndex).rawImage = rawImage(rangeY, rangeX, rangeZ);
+        nucleiDataBase(f, currentIndex).maskImage = imclose(uint8(nucleiImage(rangeY, rangeX, rangeZ) == i), strel('sphere', 2));
+        nucleiDataBase(f, currentIndex).maskImage = imdilate(imgaussfilt3(nucleiDataBase(f, currentIndex).maskImage, 2) > 0.5, strel('sphere', 1));
+        nucleiDataBase(f, currentIndex).stdImage = stdImage(rangeY, rangeX, rangeZ);
+        nucleiDataBase(f, currentIndex).meanImage = meanImage(rangeY, rangeX, rangeZ);
+        nucleiDataBase(f, currentIndex).backgroundMean = backgroundMean;
+        nucleiDataBase(f, currentIndex).backgroundStd = backgroundStd;
 
         %% increment counter for next object and show status
         currentIndex = currentIndex + 1;

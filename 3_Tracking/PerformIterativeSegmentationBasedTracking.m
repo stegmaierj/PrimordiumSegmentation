@@ -47,7 +47,7 @@ else
 end
 
 %% specify the output directory
-outputRoot = uigetdir('C:\Users\stegmaier\Downloads\GlobalOutputTest\', 'Please select the output root directory ...');
+outputRoot = uigetdir('C:\Users\stegmaier\Downloads\20211129_Stiching_EGFP_Caax-H2a-mCherry_CA-Mypt1\', 'Please select the output root directory ...');
 outputRoot = [outputRoot filesep];
 if (~isfolder(outputRoot)); mkdir(outputRoot); end
 
@@ -65,7 +65,8 @@ if (useRegistrationBasedCorrection == true)
     transformationDir = [outputRoot 'Transformations' filesep];
     if (~isfolder(transformationDir))
         transformationDir = uigetdir('D:\ScieboDrive\Projects\2021\KnautNYU_PrimordiumCellSegmentation\Processing\Transformations\', 'Specify the transformation directory');
-        transformationDir = [transformationDir filesep];    
+        transformationDir = [transformationDir filesep];
+        transformationFiles = dir([transformationDir '*.txt']);
     else
         disp(['Using transformations contained in the folder ' transformationDir]);    
     end
@@ -77,7 +78,6 @@ if (~isfolder(outputFolderTracked)); mkdir(outputFolderTracked); end
 
 %% get information about the input/output files
 inputFiles = dir([inputDir '*.tif']);
-transformationFiles = dir([transformationDir '*.txt']);
 numFrames = length(inputFiles);
 
 %% specify save options
@@ -230,7 +230,7 @@ for i=numFrames:-1:1
     end
     
     %% print status message
-    fprintf('Finished tracking frame %i / %i', numFrames-i+1, numFrames);
+    fprintf('Finished tracking frame %i / %i\n', numFrames-i+1, numFrames);
 end
 
 %% save result images

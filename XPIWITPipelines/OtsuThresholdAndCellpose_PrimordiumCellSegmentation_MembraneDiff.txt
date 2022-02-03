@@ -1,0 +1,12 @@
+--output C:/Users/stegmaier/Downloads/TEst/
+--input 0, X:/Data/KnautNYU_PrimordiumCellSegmentation/20211129_Stiching_EGFP_Caax-H2a-mCherry_CA-Mypt1/Nuclei/20211129_Stiching_EGFP_Caax-H2a-mCherry_CA-Mypt1_t=200_c=01.tif, 3, float
+--input 1, X:/Projects/KnautNYU_PrimordiumCellSegmentation/2022_01_31_Cellpose3DPredictions/20211129_Stiching_EGFP_Caax-H2a-mCherry_CA-Mypt1/pred1_20211129_Stiching_EGFP_Caax-H2a-mCherry_CA-Mypt1_t=200_c=01.tif, 3, float
+--input 2, X:/Projects/KnautNYU_PrimordiumCellSegmentation/2022_01_31_Cellpose3DPredictions/20211129_Stiching_EGFP_Caax-H2a-mCherry_CA-Mypt1/pred2_20211129_Stiching_EGFP_Caax-H2a-mCherry_CA-Mypt1_t=200_c=01.tif, 3, float
+--input 3, X:/Projects/KnautNYU_PrimordiumCellSegmentation/2022_01_31_Cellpose3DPredictions/20211129_Stiching_EGFP_Caax-H2a-mCherry_CA-Mypt1/pred3_20211129_Stiching_EGFP_Caax-H2a-mCherry_CA-Mypt1_t=200_c=01.tif, 3, float
+--input 4, X:/Data/KnautNYU_PrimordiumCellSegmentation/20211129_Stiching_EGFP_Caax-H2a-mCherry_CA-Mypt1/Membranes/20211129_Stiching_EGFP_Caax-H2a-mCherry_CA-Mypt1_t=200_c=00.tif, 3, float
+--xml D:/Projects/2021/KnautNYU_PrimordiumCellSegmentation/XPIWITPipelines/OtsuThresholdAndCellpose_PrimordiumCellSegmentation_MembraneDiff.xml
+--seed 0
+--lockfile off
+--subfolder filterid, filtername
+--outputformat imagename, filtername
+--end
