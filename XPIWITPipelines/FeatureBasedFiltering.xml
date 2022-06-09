@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xpiwit>
+    <pipeline>
+        <item item_id="item_0015">
+            <name>ImageReader</name>
+            <description>Reads image from disk</description>
+            <input number_images="1" number_meta="0">
+                <image item_id_ref="cmd" number_of_output="0"/>
+            </input>
+            <output number_images="1" number_meta="0">
+                <image number="1"/>
+            </output>
+            <arguments>
+                <parameter key="WriteResult" value="0" type="3" description="Write output to disk"/>
+                <parameter key="WriteMetaData" value="1" type="3" description="Write meta data to disk"/>
+                <parameter key="MaxThreads" value="-1" type="2" description="Define the maximum number of concurrent threads. Setting it to -1 uses all available cores (default)."/>
+                <parameter key="Compression" value="1" type="3" description="If set to 1, compression is used for file saving."/>
+                <parameter key="Precision" value="16" type="2" description="Switch between uint8 and uint16 result image types."/>
+                <parameter key="UseSeriesReader" value="0" type="3" description="Combine separate 2D images to one 3D stack. Drag&amp;drop first file of the series and substitute the series index by %0nd, with n being the number of digits."/>
+                <parameter key="SeriesMinIndex" value="0" type="2" description="Start index for the series reader"/>
+                <parameter key="SeriesMaxIndex" value="499" type="2" description="End index for the series reader"/>
+                <parameter key="SeriesIncrement" value="1" type="2" description="Index increment for the series reader"/>
+                <parameter key="SpacingX" value="1" type="1" description="Original spacing in the first dimension"/>
+                <parameter key="SpacingY" value="1" type="1" description="Original spacing in the second dimension"/>
+                <parameter key="SpacingZ" value="2.5" type="1" description="Original spacing in the third dimension"/>
+                <parameter key="InputMinimumValue" value="0" type="1" description="Minimum intensity value of the input image. Set to -1 for auto detection"/>
+                <parameter key="InputMaximumValue" value="65535" type="1" description="Maximum intensity value of the input image. Set to -1 for auto detection"/>
+                <parameter key="NormalizeIntensity" value="1" type="3" description="If enabled, rescales the input intensities to float range [0, 1]. Only disable for LabelImages."/>
+            </arguments>
+        </item>
+        <item item_id="item_0020">
+            <name>FeatureBasedRegionRejectionFilter</name>
+            <description>Extracts the region properties of the image</description>
+            <input number_images="1" number_meta="1">
+                <image item_id_ref="item_0014" number_of_output="1" type_number="2"/>
+                <meta item_id_ref="item_0009" number_of_output="1" type_number="0"/>
+            </input>
+            <output number_images="1" number_meta="0">
+                <image number="1"/>
+            </output>
+            <arguments>
+                <parameter key="WriteResult" value="1" type="3" description="Write output to disk"/>
+                <parameter key="WriteMetaData" value="1" type="3" description="Write meta data to disk"/>
+                <parameter key="MaxThreads" value="-1" type="2" description="Define the maximum number of concurrent threads. Setting it to -1 uses all available cores (default)."/>
+                <parameter key="Compression" value="1" type="3" description="If set to 1, compression is used for file saving."/>
+                <parameter key="Precision" value="16" type="2" description="Switch between uint8 and uint16 result image types."/>
+                <parameter key="LabelOutput" value="1" type="3" description="Switch between feature map or label output"/>
+                <parameter key="Relabel" value="1" type="3" description="Relabels the filtered objects such that all labels between 1 and N are present (only applied if LabelOutput is enabled)."/>
+                <parameter key="FeatureIndex" value="1" type="2" description="Index of the feature, i.e., the column id in the region props csv file starting with 0."/>
+                <parameter key="MinimumValue" value="250" type="1" description="All regions with smaller feature valeus are suppressed. E.g. helpful for noise suppression in the EDM-based seed detection."/>
+                <parameter key="MaximumValue" value="20000" type="1" description="All regions with larger feature valeus are suppressed. E.g. helpful for background suppression."/>
+                <parameter key="LabelOffset" value="0" type="2" description="The offset added to the image labels, if csv labels are shifted (e.g. C -&gt; Matlab convention)."/>
+                <parameter key="IntensityScale" value="1.0" type="1" description="Intensity scale: If set, the input intensities are multiplied by this factor."/>
+            </arguments>
+        </item>
+        <item item_id="item_0002">
+            <name>IntensityWindowingImageFilter</name>
+            <description>Rescales the image min to max to the specified range</description>
+            <input number_images="1" number_meta="0">
+                <image item_id_ref="item_0015" number_of_output="1" type_number="0"/>
+            </input>
+            <output number_images="1" number_meta="0">
+                <image number="1"/>
+            </output>
+            <arguments>
+                <parameter key="WriteResult" value="0" type="3" description="Write output to disk"/>
+                <parameter key="WriteMetaData" value="1" type="3" description="Write meta data to disk"/>
+                <parameter key="MaxThreads" value="-1" type="2" description="Define the maximum number of concurrent threads. Setting it to -1 uses all available cores (default)."/>
+                <parameter key="Compression" value="1" type="3" description="If set to 1, compression is used for file saving."/>
+                <parameter key="Precision" value="16" type="2" description="Switch between uint8 and uint16 result image types."/>
+                <parameter key="UseQuantiles" value="0.001" type="1" description="If &gt; 0, the value serves as quantile threshold."/>
+                <parameter key="InputMinimum" value="-1" type="1" description="The minimum value of the input image."/>
+                <parameter key="InputMaximum" value="-1" type="1" description="The maximum value of the input image."/>
+                <parameter key="OutputMinimum" value="0" type="1" description="The minimum value of the output image."/>
+                <parameter key="OutputMaximum" value="1" type="1" description="The maximum value of the output image."/>
+            </arguments>
+        </item>
+        <item item_id="item_0023">
+            <name>IntensityWindowingImageFilter</name>
+            <description>Rescales the image min to max to the specified range</description>
+            <input number_images="1" number_meta="0">
+                <image item_id_ref="item_0022" number_of_output="1" type_number="0"/>
+            </input>
+            <output number_images="1" number_meta="0">
+                <image number="1"/>
+            </output>
+            <arguments>
+                <parameter key="WriteResult" value="0" type="3" description="Write output to disk"/>
+                <parameter key="WriteMetaData" value="1" type="3" description="Write meta data to disk"/>
+                <parameter key="MaxThreads" value="-1" type="2" description="Define the maximum number of concurrent threads. Setting it to -1 uses all available cores (default)."/>
+                <parameter key="Compression" value="1" type="3" description="If set to 1, compression is used for file saving."/>
+                <parameter key="Precision" value="16" type="2" description="Switch between uint8 and uint16 result image types."/>
+                <parameter key="UseQuantiles" value="-1" type="1" description="If &gt; 0, the value serves as quantile threshold."/>
+                <parameter key="InputMinimum" value="0" type="1" description="The minimum value of the input image."/>
+                <parameter key="InputMaximum" value="1" type="1" description="The maximum value of the input image."/>
+                <parameter key="OutputMinimum" value="0" type="1" description="The minimum value of the output image."/>
+                <parameter key="OutputMaximum" value="65535" type="1" description="The maximum value of the output image."/>
+            </arguments>
+        </item>
+        <item item_id="item_0022">
+            <name>GrayscaleDilateImageFilter</name>
+            <description>Erosion and dilation of a grayscale image</description>
+            <input number_images="1" number_meta="0">
+                <image item_id_ref="item_0002" number_of_output="1" type_number="0"/>
+            </input>
+            <output number_images="1" number_meta="0">
+                <image number="1"/>
+            </output>
+            <arguments>
+                <parameter key="WriteResult" value="0" type="3" description="Write output to disk"/>
+                <parameter key="WriteMetaData" value="1" type="3" description="Write meta data to disk"/>
+                <parameter key="MaxThreads" value="-1" type="2" description="Define the maximum number of concurrent threads. Setting it to -1 uses all available cores (default)."/>
+                <parameter key="Compression" value="1" type="3" description="If set to 1, compression is used for file saving."/>
+                <parameter key="Precision" value="16" type="2" description="Switch between uint8 and uint16 result image types."/>
+                <parameter key="Type" value="Ball" type="0" description="Kernel type. (Annulus, Ball, Box, Cross)"/>
+                <parameter key="Radius" value="3" type="2" description="Radius of the kernel."/>
+                <parameter key="Thickness" value="1" type="2" description="Thickness of annulus."/>
+                <parameter key="Parametric" value="0" type="3" description="Use parametric mode."/>
+                <parameter key="SafeBorder" value="1" type="3" description="Use safe border mode."/>
+            </arguments>
+        </item>
+        <item item_id="item_0009">
+            <name>ExtractRegionPropsFilter</name>
+            <description>Extracts the region properties of the image</description>
+            <input number_images="2" number_meta="0">
+                <image item_id_ref="item_0016" number_of_output="1" type_number="2"/>
+                <image item_id_ref="item_0023" number_of_output="1" type_number="0"/>
+            </input>
+            <output number_images="0" number_meta="1">
+                <meta number="1"/>
+            </output>
+            <arguments>
+                <parameter key="WriteResult" value="0" type="3" description="Write output to disk"/>
+                <parameter key="WriteMetaData" value="1" type="3" description="Write meta data to disk"/>
+                <parameter key="MaxThreads" value="-1" type="2" description="Define the maximum number of concurrent threads. Setting it to -1 uses all available cores (default)."/>
+                <parameter key="Compression" value="1" type="3" description="If set to 1, compression is used for file saving."/>
+                <parameter key="Precision" value="16" type="2" description="Switch between uint8 and uint16 result image types."/>
+                <parameter key="BinaryInput" value="0" type="3" description="If input is binary, a label image is generated before extracting the region properties."/>
+                <parameter key="Threshold" value="-1" type="1" description="If input is binary, recreate a binary image to get rid of casting failures (-1 no recalculation)."/>
+                <parameter key="FullyConnected" value="1" type="3" description="Determines the connectivity model. Use FullyConnected = 1 for 8/26-neighborhood or to 0 for 4/6 neighborhood."/>
+                <parameter key="GeometryMode" value="1" type="3" description="Switch between geometry and statistics mode"/>
+                <parameter key="MinimumVolume" value="0" type="2" description="All regions with smaller volume are suppressed. E.g. helpful for noise suppression in the EDM-based seed detection."/>
+                <parameter key="MaximumVolume" value="-1" type="2" description="All regions with larger volume are suppressed. E.g. helpful for background suppression."/>
+            </arguments>
+        </item>
+        <item item_id="item_0019">
+            <name>FeatureBasedRegionRejectionFilter</name>
+            <description>Extracts the region properties of the image</description>
+            <input number_images="1" number_meta="1">
+                <image item_id_ref="item_0016" number_of_output="1" type_number="2"/>
+                <meta item_id_ref="item_0009" number_of_output="1" type_number="0"/>
+            </input>
+            <output number_images="1" number_meta="0">
+                <image number="1"/>
+            </output>
+            <arguments>
+                <parameter key="WriteResult" value="0" type="3" description="Write output to disk"/>
+                <parameter key="WriteMetaData" value="1" type="3" description="Write meta data to disk"/>
+                <parameter key="MaxThreads" value="-1" type="2" description="Define the maximum number of concurrent threads. Setting it to -1 uses all available cores (default)."/>
+                <parameter key="Compression" value="1" type="3" description="If set to 1, compression is used for file saving."/>
+                <parameter key="Precision" value="16" type="2" description="Switch between uint8 and uint16 result image types."/>
+                <parameter key="LabelOutput" value="1" type="3" description="Switch between feature map or label output"/>
+                <parameter key="Relabel" value="0" type="3" description="Relabels the filtered objects such that all labels between 1 and N are present (only applied if LabelOutput is enabled)."/>
+                <parameter key="FeatureIndex" value="4" type="2" description="Index of the feature, i.e., the column id in the region props csv file starting with 0."/>
+                <parameter key="MinimumValue" value="0" type="1" description="All regions with smaller feature valeus are suppressed. E.g. helpful for noise suppression in the EDM-based seed detection."/>
+                <parameter key="MaximumValue" value="51" type="1" description="All regions with larger feature valeus are suppressed. E.g. helpful for background suppression."/>
+                <parameter key="LabelOffset" value="0" type="2" description="The offset added to the image labels, if csv labels are shifted (e.g. C -&gt; Matlab convention)."/>
+                <parameter key="IntensityScale" value="1.0" type="1" description="Intensity scale: If set, the input intensities are multiplied by this factor."/>
+            </arguments>
+        </item>
+        <item item_id="item_0014">
+            <name>FeatureBasedRegionRejectionFilter</name>
+            <description>Extracts the region properties of the image</description>
+            <input number_images="1" number_meta="1">
+                <image item_id_ref="item_0019" number_of_output="1" type_number="2"/>
+                <meta item_id_ref="item_0009" number_of_output="1" type_number="0"/>
+            </input>
+            <output number_images="1" number_meta="0">
+                <image number="1"/>
+            </output>
+            <arguments>
+                <parameter key="WriteResult" value="0" type="3" description="Write output to disk"/>
+                <parameter key="WriteMetaData" value="1" type="3" description="Write meta data to disk"/>
+                <parameter key="MaxThreads" value="-1" type="2" description="Define the maximum number of concurrent threads. Setting it to -1 uses all available cores (default)."/>
+                <parameter key="Compression" value="1" type="3" description="If set to 1, compression is used for file saving."/>
+                <parameter key="Precision" value="16" type="2" description="Switch between uint8 and uint16 result image types."/>
+                <parameter key="LabelOutput" value="1" type="3" description="Switch between feature map or label output"/>
+                <parameter key="Relabel" value="0" type="3" description="Relabels the filtered objects such that all labels between 1 and N are present (only applied if LabelOutput is enabled)."/>
+                <parameter key="FeatureIndex" value="14" type="2" description="Index of the feature, i.e., the column id in the region props csv file starting with 0."/>
+                <parameter key="MinimumValue" value="30000" type="1" description="All regions with smaller feature valeus are suppressed. E.g. helpful for noise suppression in the EDM-based seed detection."/>
+                <parameter key="MaximumValue" value="-1" type="1" description="All regions with larger feature valeus are suppressed. E.g. helpful for background suppression."/>
+                <parameter key="LabelOffset" value="0" type="2" description="The offset added to the image labels, if csv labels are shifted (e.g. C -&gt; Matlab convention)."/>
+                <parameter key="IntensityScale" value="1" type="1" description="Intensity scale: If set, the input intensities are multiplied by this factor."/>
+            </arguments>
+        </item>
+        <item item_id="item_0016">
+            <name>ImageReader</name>
+            <description>Reads image from disk</description>
+            <input number_images="1" number_meta="0">
+                <image item_id_ref="cmd" number_of_output="1"/>
+            </input>
+            <output number_images="1" number_meta="0">
+                <image number="1"/>
+            </output>
+            <arguments>
+                <parameter key="WriteResult" value="0" type="3" description="Write output to disk"/>
+                <parameter key="WriteMetaData" value="1" type="3" description="Write meta data to disk"/>
+                <parameter key="MaxThreads" value="-1" type="2" description="Define the maximum number of concurrent threads. Setting it to -1 uses all available cores (default)."/>
+                <parameter key="Compression" value="1" type="3" description="If set to 1, compression is used for file saving."/>
+                <parameter key="Precision" value="16" type="2" description="Switch between uint8 and uint16 result image types."/>
+                <parameter key="UseSeriesReader" value="0" type="3" description="Combine separate 2D images to one 3D stack. Drag&amp;drop first file of the series and substitute the series index by %0nd, with n being the number of digits."/>
+                <parameter key="SeriesMinIndex" value="0" type="2" description="Start index for the series reader"/>
+                <parameter key="SeriesMaxIndex" value="499" type="2" description="End index for the series reader"/>
+                <parameter key="SeriesIncrement" value="1" type="2" description="Index increment for the series reader"/>
+                <parameter key="SpacingX" value="1" type="1" description="Original spacing in the first dimension"/>
+                <parameter key="SpacingY" value="1" type="1" description="Original spacing in the second dimension"/>
+                <parameter key="SpacingZ" value="2.5" type="1" description="Original spacing in the third dimension"/>
+                <parameter key="InputMinimumValue" value="0" type="1" description="Minimum intensity value of the input image. Set to -1 for auto detection"/>
+                <parameter key="InputMaximumValue" value="65535" type="1" description="Maximum intensity value of the input image. Set to -1 for auto detection"/>
+                <parameter key="NormalizeIntensity" value="0" type="3" description="If enabled, rescales the input intensities to float range [0, 1]. Only disable for LabelImages."/>
+            </arguments>
+        </item>
+    </pipeline>
+</xpiwit>

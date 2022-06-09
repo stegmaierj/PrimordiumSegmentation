@@ -1,0 +1,9 @@
+--output C:/Users/stegmaier/Downloads/MembraneSuppression/
+--input 0, X:/Data/KnautNYU_PrimordiumCellSegmentation/20211017_Stiching_EGFP_Caax-H2a-mCherry_crop/Membranes/20211017_Stiching_EGFP_Caax-H2a-mCherry_crop_t=330_c=00.tif, 3, float
+--input 1, I:/Projects/2022/KnautNYU_PrimordiumCellSegmentation/Processing/20211017_Stiching_EGFP_Caax-H2a-mCherry_crop/item_0031_MorphologicalWatershedFilter/20211017_Stiching_EGFP_Caax-H2a-mCherry_crop_t=330_c=01_MorphologicalWatershedFilter_Out1.tif, 3, float
+--xml I:/Projects/2022/KnautNYU_PrimordiumCellSegmentation/Software/FeatureBasedFiltering.xml
+--seed 0
+--lockfile off
+--subfolder filterid, filtername
+--outputformat imagename, filtername
+--end

@@ -75,8 +75,11 @@ for i=1:length(inputFiles)
     end
     
     %% extract the region properties
-    currentRegionProps = regionprops3(currentImage, 'Centroid', 'PrincipalAxisLength', 'Volume', 'SurfaceArea', 'ConvexVolume', 'EquivDiameter', 'Solidity', 'Solidity', 'Orientation');
+    currentRegionProps = regionprops3(currentImage, 'Centroid', 'PrincipalAxisLength', 'Volume', 'SurfaceArea', 'ConvexVolume', 'EquivDiameter', 'Solidity', 'Solidity', 'Orientation', 'VoxelIdxList');
     
+    voxelIdxLists = currentRegionProps.VoxelIdxList;
+    currentRegionProps.VoxelIdxList = [];
+
     %% convert region props table to a regular array
     resultTable = table2array(currentRegionProps);
     
@@ -85,7 +88,10 @@ for i=1:length(inputFiles)
     
     %% assemble the results table
     resultTable = [ids', resultTable(:,volumeIndex), round(resultTable(:,centroidIndex)), (i-1)*ones(size(ids')), 100*ones(size(ids')), ids', ids'];
-    resultTable(resultTable(:,2) == 0, :) = [];
+    
+    invalidIndices = find(resultTable(:,2) == 0);
+    resultTable(invalidIndices, :) = [];
+    voxelIdxLists(invalidIndices) = [];
         
     %% create TGMM style output xml files for each of the frames
     docNode = com.mathworks.xml.XMLUtils.createDocument('document'); %#ok<JAPIMATHWORKS>
@@ -99,6 +105,10 @@ for i=1:length(inputFiles)
         currentGM.setAttribute('id', num2str(resultTable(j,1)));
         currentGM.setAttribute('lineage', num2str(resultTable(j,1)));
         
+        [xpos, ypos, zpos] = ind2sub(size(currentImage), voxelIdxLists{j});
+        W = cov([zpos, ypos, xpos]);
+        WString = strrep(strrep(strrep(strrep(strrep(strrep(num2str(W(:)'), '  ', ' '), '  ', ' '), '  ', ' '), '  ', ' '), '  ', ' '), '  ', ' ');
+
         if (ismember(resultTable(j,1), previousLabels))
             currentGM.setAttribute('parent', num2str(resultTable(j,1)));
         else
@@ -110,7 +120,12 @@ for i=1:length(inputFiles)
         currentGM.setAttribute('nu', '126.937');
         currentGM.setAttribute('beta', '126.937');
         currentGM.setAttribute('m', num2str(resultTable(j,3:5)));
-        currentGM.setAttribute('W', '1 0 0 0 1 0 0 0 1');
+
+        if (rank(W) < 3)
+            currentGM.setAttribute('W', '1 0 0 0 1 0 0 0 1');
+        else
+            currentGM.setAttribute('W', WString);
+        end
         currentGM.setAttribute('nuPrior', '4');
         currentGM.setAttribute('betaPrior', '0.075017');
         currentGM.setAttribute('alphaPrior', '0');
