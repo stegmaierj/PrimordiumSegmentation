@@ -33,6 +33,8 @@ addpath('../ThirdParty/saveastiff_4.3/');
 useRegistrationBasedCorrection = false;
 preloadData = true; %% only set to false if debugging to avoid reloading the data at each call
 minVolume = 100; %% excludes objects smaller than this volume
+skipFrames = 10; %% the allowed number of frames to skip for tracking an object
+maxCellSize = 5.5599e+03 + 2*1.2410e+04; % 4000 for Weiyis Project;
 %%%%%%%%%% PARAMETERS %%%%%%%%%%%
 
 %% specify elastix path
@@ -98,7 +100,7 @@ if (preloadData == true)
     parfor i=1:numFrames
         
         %% load the current image and obtain the region props
-        segmentationImages{i} = loadtiff([inputDir inputFiles(i).name]);
+        segmentationImages{i} = uint16(loadtiff([inputDir inputFiles(i).name]));
         regionProps{i} = regionprops(segmentationImages{i}, 'Area', 'Centroid', 'PixelIdxList', 'BoundingBox');
                 
         %% remove spurious objects that have their centroid outside of the valid area
@@ -155,7 +157,7 @@ end
 %% clear previous tracking results
 clear visitedIndices;
 for i=1:numFrames
-    visitedIndices{i} = zeros(size(regionProps{i},1)); %#ok<SAGROW>
+    visitedIndices{i} = zeros(size(regionProps{i},1), 1); %#ok<SAGROW>
     resultImages{i}(:) = 0;
 end
 
@@ -164,13 +166,21 @@ currentTrackingId = 1;
 
 %% iterate over all frames in a backward fashion
 for i=numFrames:-1:1
-    
+
     %% process all cells contained in the current frame
     for j=1:size(regionProps{i},1)
         
+        if (i==4 && (j == 178 || j == 179))
+            test = 1;
+        end
+
         %% skip processing if cell was already visited or is below the minimum volume
         if (regionProps{i}(j).Area < minVolume || visitedIndices{i}(j))
             continue;
+        end
+
+        if (currentTrackingId == 54)
+            test = 1;
         end
         
         %% get the current object and add it to the result image
@@ -189,40 +199,127 @@ for i=numFrames:-1:1
         %% track current object as long as possible
         while currentFrame > 1
             
-            %% identify the potential matches
-            potentialMatches = segmentationImages{currentFrame-1}(currentObject);
-            potentialMatchIndices = unique(potentialMatches);
-            potentialMatchIndices(potentialMatchIndices == 0) = [];
-            
-            %% determine the best match
-            matchCounts = zeros(size(potentialMatchIndices));
-            diceIndices = zeros(size(potentialMatchIndices));
-            for k=1:length(matchCounts)
-                matchCounts(k) = sum(potentialMatches == potentialMatchIndices(k));
-                diceIndices(k) = 2 * (matchCounts(k)) / (length(currentObject) + regionProps{currentFrame-1}(potentialMatchIndices(k)).Area);
+            matchIndices = [];
+            matchDiceIndices = [];
+            for s=1:skipFrames
+
+                if ((currentFrame-s) < 1)
+                    matchIndices = [];
+                    break;
+                end
+
+                %% identify the potential matches
+                currentIndex = unique(segmentationImages{currentFrame}(currentObject));
+                potentialMatches = segmentationImages{currentFrame-s}(currentObject);
+                potentialMatchIndices = unique(potentialMatches);
+                potentialMatchIndices(potentialMatchIndices == 0) = [];
+
+                if (isempty(potentialMatchIndices))
+                    continue;
+                end
+                
+                for m=potentialMatchIndices'
+
+                    %% TODO: add forward consistency check for largest overlap matches!
+                    matchObject = regionProps{currentFrame-s}(m).PixelIdxList;
+                    potentialMatchesForward = segmentationImages{currentFrame}(matchObject);
+                    potentialMatchIndicesFw = unique(potentialMatchesForward);
+                    potentialMatchIndicesFw(potentialMatchIndicesFw == 0) = [];
+        
+                    matchCountsFw = zeros(size(potentialMatchIndicesFw));
+                    diceIndicesFw = zeros(size(potentialMatchIndicesFw));
+                    for k=1:length(matchCountsFw)
+                        matchCountsFw(k) = sum(potentialMatchesForward == potentialMatchIndicesFw(k));
+                        diceIndicesFw(k) = 2 * (matchCountsFw(k)) / (length(potentialMatchesForward) + regionProps{currentFrame}(potentialMatchIndicesFw(k)).Area);
+                    end
+        
+                    [maxOverlapFw, maxIndexFw] = max(diceIndicesFw);
+                    matchIndexFw = potentialMatchIndicesFw(maxIndexFw);
+        
+                    
+                    %% skip if the linked object is already taken or if no object was found
+                    if (ismember(matchIndexFw, currentIndex))
+                        matchIndices = [matchIndices, m];
+                        matchDiceIndices = [matchDiceIndices, maxOverlapFw];
+                    end
+                end
+                
+
+%                 %% determine the best match
+%                 matchCounts = zeros(size(potentialMatchIndices));
+%                 diceIndices = zeros(size(potentialMatchIndices));
+%                 for k=1:length(matchCounts)
+%                     matchCounts(k) = sum(potentialMatches == potentialMatchIndices(k));
+%                     diceIndices(k) = 2 * (matchCounts(k)) / (length(currentObject) + regionProps{currentFrame-s}(potentialMatchIndices(k)).Area);
+%                 end
+% 
+%                 [sortedDiceIndices, sortedIndices] = sort(diceIndices, 'descend');
+% 
+%                 if (length(sortedDiceIndices) > 1)
+%                     secondNNRatio = sortedDiceIndices(2) / sortedDiceIndices(1);
+%                     if (secondNNRatio > secondNNRatioThreshold)
+%                         test = 1;
+%                         disp('Oversegmentation Detected!');
+%                     end
+%                 else
+% 
+%                     %% set the match index as the maximum overlap segment
+%                     [maxOverlap, maxIndex] = max(diceIndices);
+%                     matchIndex = potentialMatchIndices(maxIndex);
+%         
+%                     %% skip if the linked object is already taken or if no object was found
+%                     if (~isempty(matchIndex))
+%                         currentSkipFrame = s;
+%                         break;
+%                     end
+%                 end
+
+                % skip if the linked object is already taken or if no object was found
+                if (~isempty(potentialMatchIndices))
+                    currentSkipFrame = s;
+                    break;
+                end
             end
-            
-            %% set the match index as the maximum overlap segment
-            [maxOverlap, maxIndex] = max(diceIndices);
-            matchIndex = potentialMatchIndices(maxIndex);
-            
-            %% skip if the linked object is already taken or if no object was found
-            if (isempty(matchIndex) || visitedIndices{currentFrame-1}(matchIndex) > 0)
+
+            if (isempty(matchIndices))
                 break;
             end
-            
-            %% update the matched object and add it to the next result image
-            visitedIndices{currentFrame-1}(matchIndex) = 1;
-            currentObject = regionProps{currentFrame-1}(matchIndex).PixelIdxList;
-            resultImages{currentFrame-1}(currentObject) = currentTrackingId;
-            
-            %% use the transformed current object for better alignment
-            if (useRegistrationBasedCorrection == true && length(regionPropsTransformed{currentFrame-1}) >= matchIndex)
-                currentObject = regionPropsTransformed{currentFrame-1}(matchIndex).PixelIdxList;
+
+            %% add intermediate masks for frames where the segmentation is missing
+            %% TODO: evenly distribute between current and previous frame.
+            for s=1:(currentSkipFrame-1)
+                resultImages{currentFrame-s}(currentObject) = currentTrackingId;
+            end
+
+            %% select only best match if the current segment is a potentially undersegmented object
+            [sortedDiceIndices, sortedIndices] = sort(matchDiceIndices, 'descend');
+
+            if (length(currentObject) > maxCellSize)
+                matchIndices = matchIndices(sortedIndices(1));
+            end
+
+
+            currentObject = [];
+            for matchIndex=matchIndices
+
+                if (visitedIndices{currentFrame-currentSkipFrame}(matchIndex) > 0)
+                    continue;
+                end
+
+                %% update the matched object and add it to the next result image
+                visitedIndices{currentFrame-currentSkipFrame}(matchIndex) = 1;
+                currentObject = [currentObject; regionProps{currentFrame-currentSkipFrame}(matchIndex).PixelIdxList];
+            end
+
+            resultImages{currentFrame-currentSkipFrame}(currentObject) = currentTrackingId;
+                
+            %% TODO!!!! CHANGE !!! AFTER !!! ADDITION OF MULTIPLE SEGMENTS !!! use the transformed current object for better alignment
+            if (useRegistrationBasedCorrection == true && length(regionPropsTransformed{currentFrame-currentSkipFrame}) >= matchIndex)
+                currentObject = regionPropsTransformed{currentFrame-currentSkipFrame}(matchIndex).PixelIdxList;
             end
             
             %% decrement frame counter
-            currentFrame = currentFrame - 1;
+            currentFrame = currentFrame - currentSkipFrame;
         end
         
         %% increase tracking id
