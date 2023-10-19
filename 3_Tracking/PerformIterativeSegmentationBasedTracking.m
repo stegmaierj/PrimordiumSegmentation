@@ -34,7 +34,7 @@ useRegistrationBasedCorrection = false;
 preloadData = true; %% only set to false if debugging to avoid reloading the data at each call
 minVolume = 100; %% excludes objects smaller than this volume
 skipFrames = 10; %% the allowed number of frames to skip for tracking an object
-maxCellSize = 5.5599e+03 + 2*1.2410e+04; % 4000 for Weiyis Project;
+maxCellSize = 4000; % 3000-4000 for Weiyis Project; 5.5599e+03 + 2*1.2410e+04; for Baptiste's project
 %%%%%%%%%% PARAMETERS %%%%%%%%%%%
 
 %% specify elastix path
@@ -54,7 +54,7 @@ outputRoot = [outputRoot filesep];
 if (~isfolder(outputRoot)); mkdir(outputRoot); end
 
 %% get the input directories
-inputDir = [outputRoot 'Nuclei_Segmented' filesep];
+inputDir = [outputRoot 'Nuclei_Segmented_Corrected' filesep];
 if (~isfolder(inputDir))
     inputDir = uigetdir('I:\Projects\2021\KnautNYU_PrimordiumCellSegmentation\Processing\item_0012_GradientVectorFlowTrackingImageFilter\', 'Specify the input folder containing segmentation tiffs for each time point.');
     inputDir = [inputDir filesep];
@@ -77,6 +77,9 @@ end
 %% create the result folder for the tracking data
 outputFolderTracked = [outputRoot 'Nuclei_Tracked' filesep];
 if (~isfolder(outputFolderTracked)); mkdir(outputFolderTracked); end
+
+outputFolderTrackedMaxProj = [outputRoot 'Nuclei_Tracked_MaxProj' filesep];
+if (~isfolder(outputFolderTrackedMaxProj)); mkdir(outputFolderTrackedMaxProj); end
 
 %% get information about the input/output files
 inputFiles = dir([inputDir '*.tif']);
@@ -154,6 +157,38 @@ if (preloadData == true)
     end
 end
 
+maxLabel = length(regionProps{1});
+d_orgs = zeros(maxLabel, numFrames, 5);
+
+for i=1:numFrames
+    for j=1:length(regionProps{i})
+        if (regionProps{i}(j).Area > 0)
+            d_orgs(j,i,:) = [j, regionProps{i}(j).Area, regionProps{i}(j).Centroid];
+        end
+    end    
+end
+
+%% plot statistics of the different frames
+
+volumeStatistics = zeros(numFrames, 3);
+
+for i=1:numFrames
+    validIndices = find(d_orgs(:,i,1) > 0);
+
+    volumeStatistics(i, 1) = mean(d_orgs(validIndices, i, 2));
+    volumeStatistics(i, 2) = std(d_orgs(validIndices, i, 2));
+    volumeStatistics(i, 3) = median(d_orgs(validIndices, i, 2));
+    volumeStatistics(i, 4) = 1.4826*median(abs(median(d_orgs(validIndices, i, 2)) - (d_orgs(validIndices, i, 2))));
+
+%     figure(2);
+%     histogram(d_orgs(validIndices, i, 2));
+%     title(['Frame: ' num2str(i) ', Mean: ' num2str(volumeStatistics(i,1)) ', Std.Dev.: ' num2str(volumeStatistics(i,2)) ', Median: ' num2str(volumeStatistics(i,3))]);
+% 
+%     test = 1;
+end
+
+
+
 %% clear previous tracking results
 clear visitedIndices;
 for i=1:numFrames
@@ -179,7 +214,7 @@ for i=numFrames:-1:1
             continue;
         end
 
-        if (currentTrackingId == 54)
+        if (currentTrackingId == 131)
             test = 1;
         end
         
@@ -294,6 +329,8 @@ for i=numFrames:-1:1
             %% select only best match if the current segment is a potentially undersegmented object
             [sortedDiceIndices, sortedIndices] = sort(matchDiceIndices, 'descend');
 
+            currentProbability = pdf('Normal', length(currentObject), volumeStatistics(currentFrame, 3), volumeStatistics(currentFrame, 4));
+
             if (length(currentObject) > maxCellSize)
                 matchIndices = matchIndices(sortedIndices(1));
             end
@@ -333,4 +370,5 @@ end
 %% save result images
 parfor i=1:numFrames
     saveastiff(uint16(resultImages{i}), [outputFolderTracked strrep(inputFiles(i).name, '.tif', '_Tracked.tif')], options);
+    saveastiff(uint16(max(resultImages{i}, [], 3)), [outputFolderTrackedMaxProj strrep(inputFiles(i).name, '.tif', '_TrackedMaxProj.tif')], options);
 end

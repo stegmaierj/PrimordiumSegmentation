@@ -24,136 +24,136 @@
 %
 %%
 
-%% setup input paths
-addpath('../ThirdParty')
-addpath('../ThirdParty/saveastiff_4.3');
-addpath('../ThirdParty/matlab-mastodon-importer/src');
-
-%% specify the output directory
-outputRoot = uigetdir('C:\Users\stegmaier\Downloads\GlobalOutputTest\', 'Please select the output root directory ...');
-outputRoot = [outputRoot filesep];
-if (~isfolder(outputRoot)); mkdir(outputRoot); end
-
-%% specify the output directory
-outputFolderCorrected = [outputRoot 'Nuclei_Tracked_Corrected' filesep];
-if (~isfolder(outputFolderCorrected)); mkdir(outputFolderCorrected); end
-
-%% create subfolders for csv and image output
-outputFolderImages = [outputFolderCorrected 'TrackedImages' filesep];
-outputFolderCSV = [outputFolderCorrected 'RegionProps' filesep];
-if (~isfolder(outputFolderImages)); mkdir(outputFolderImages); end
-if (~isfolder(outputFolderCSV)); mkdir(outputFolderCSV); end
-
-%% 
-inputFolderNuclei = [outputRoot 'Nuclei' filesep];
-if (~isfolder(inputFolderNuclei))
-    inputFolderNuclei = uigetdir('X:\Projects\KnautNYU_PrimordiumCellSegmentation\2021_10_08\20210506_Stiching_EGFP_Caax-H2a-mCherry\Nuclei\', 'Please select the input directory (should contain tracked 3D tiffs for each frame)');
-    inputFolderNuclei = [inputFolderNuclei filesep];
-else
-    disp(['Using raw nuclei image files contained in folder ' inputFolderNuclei]);
-end
-inputFilesRaw = dir([inputFolderNuclei '*.tif']);
-
-%% specify the input directory
-inputFolderTrackedNuclei = [outputRoot 'Nuclei_Tracked' filesep];
-if (~isfolder(inputFolderTrackedNuclei))
-    inputFolderTrackedNuclei = uigetdir('X:\Projects\KnautNYU_PrimordiumCellSegmentation\2021_10_08\20210506_Stiching_EGFP_Caax-H2a-mCherry\Nuclei_Tracked\', 'Please select the input directory (should contain tracked 3D tiffs for each frame)');
-    inputFolderTrackedNuclei = [inputFolderTrackedNuclei filesep];
-else
-    disp(['Using tracked image files contained in folder ' inputFolderTrackedNuclei]);
-end
-inputFilesSegmentation = dir([inputFolderTrackedNuclei '*.tif']);
-
-%% specify the input mastodon file
-[inputFileMastodon, inputPathMastodon]  = uigetfile('*.mastodon', 'Select the mastodon file you want to apply to the selected images');
-
-%% bring mastodon file into a d_orgs like format for easier application to the image data
-[G, metadata, tss] = import_mastodon( [inputPathMastodon inputFileMastodon] );
-
-nodes = table2array(G.Nodes(:,1:5));
-nodes(:,1) = nodes(:,1)+1;
-nodes(:,5) = nodes(:,5)+1;
-
-edges = table2array(G.Edges);
-
-%% sort the edges based on their start time point
-%% otherwise it can happen that objects are added later and start a new track
-edges(:,end+1) = 0;
-for i=1:size(edges,1)
-    
-    currentEdge = edges(i,:);
-    
-    object1 = nodes(currentEdge(1), :);
-   
-    timePoint1 = object1(5);
-    edges(i,end) = timePoint1;
-end
-
-[timePoints, edgeOrder] = sort(edges(:,end), 'ascend');
-edges = edges(edgeOrder, :);
-
-visitedNodes = zeros(size(nodes,1),1);
-visitedEdges = zeros(size(edges,1),1);
-
-d_orgs = zeros(size(nodes,1), 6);
-for i=1:size(nodes,1)
-    currentTimePoint = nodes(i,5);
-    d_orgs(i, currentTimePoint, 1) = nodes(i,1);
-    d_orgs(i, currentTimePoint, 2) = 1;
-    d_orgs(i, currentTimePoint, 3:5) = round(nodes(i,2:4));
-end
-
-deletionIndices = zeros(size(d_orgs,1),1);
-for i=1:size(edges,1)
-    currentEdge = edges(i,:);
-    
-    object1 = nodes(currentEdge(1), :);
-    object2 = nodes(currentEdge(2), :);
-    
-    timePoint1 = object1(5);
-    timePoint2 = object2(5);
-    
-    object1Index = find(d_orgs(:,timePoint1,1) == currentEdge(1));
-    object2Index = find(d_orgs(:,timePoint2,1) == currentEdge(2));
-        
-    d_orgs(object1Index, timePoint2, :) = d_orgs(object2Index, timePoint2, :);
-    d_orgs(object2Index, timePoint2, :) = 0;
-    
-    deletionIndices(object2Index) = 1;
-end
-
-%% remove empty rows
-d_orgs(deletionIndices > 0, :, :) = [];
-
-%% renumber indices that belong to a single track
-for i=1:size(d_orgs,1)
-    validIndices = squeeze(d_orgs(i,:,1)) > 0;
-    d_orgs(i,validIndices,1) = i;
-end
-
-%% define z-spacing (only needed if isotropic images should be processed).
-zspacing = 1; %% 0.325 x 0.325 x 0.8 µm
-
-%% specify indices of the features in the region props table
-volumeIndex = 1;
-centroidIndex = 2:4;
-equivDiameterIndex = 5;
-principalAxisLength = 6:8;
-orientationIndex = 9:11;
-convexVolumeIndex = 12;
-solidityIndex = 13;
-surfaceAreaIndex = 14;
-
-%% initialize the previous labels array
-previousLabels = [];
-
-%% save options
-clear options;
-options.compress = 'lzw';
-options.overwrite = true;
+% %% setup input paths
+% addpath('../ThirdParty')
+% addpath('../ThirdParty/saveastiff_4.3');
+% addpath('../ThirdParty/matlab-mastodon-importer/src');
+% 
+% %% specify the output directory
+% outputRoot = uigetdir('C:\Users\stegmaier\Downloads\GlobalOutputTest\', 'Please select the output root directory ...');
+% outputRoot = [outputRoot filesep];
+% if (~isfolder(outputRoot)); mkdir(outputRoot); end
+% 
+% %% specify the output directory
+% outputFolderCorrected = [outputRoot 'Nuclei_Tracked_Corrected' filesep];
+% if (~isfolder(outputFolderCorrected)); mkdir(outputFolderCorrected); end
+% 
+% %% create subfolders for csv and image output
+% outputFolderImages = [outputFolderCorrected 'TrackedImages' filesep];
+% outputFolderCSV = [outputFolderCorrected 'RegionProps' filesep];
+% if (~isfolder(outputFolderImages)); mkdir(outputFolderImages); end
+% if (~isfolder(outputFolderCSV)); mkdir(outputFolderCSV); end
+% 
+% %% 
+% inputFolderNuclei = [outputRoot 'Nuclei' filesep];
+% if (~isfolder(inputFolderNuclei))
+%     inputFolderNuclei = uigetdir('X:\Projects\KnautNYU_PrimordiumCellSegmentation\2021_10_08\20210506_Stiching_EGFP_Caax-H2a-mCherry\Nuclei\', 'Please select the input directory (should contain tracked 3D tiffs for each frame)');
+%     inputFolderNuclei = [inputFolderNuclei filesep];
+% else
+%     disp(['Using raw nuclei image files contained in folder ' inputFolderNuclei]);
+% end
+% inputFilesRaw = dir([inputFolderNuclei '*.tif']);
+% 
+% %% specify the input directory
+% inputFolderTrackedNuclei = [outputRoot 'Nuclei_Tracked' filesep];
+% if (~isfolder(inputFolderTrackedNuclei))
+%     inputFolderTrackedNuclei = uigetdir('X:\Projects\KnautNYU_PrimordiumCellSegmentation\2021_10_08\20210506_Stiching_EGFP_Caax-H2a-mCherry\Nuclei_Tracked\', 'Please select the input directory (should contain tracked 3D tiffs for each frame)');
+%     inputFolderTrackedNuclei = [inputFolderTrackedNuclei filesep];
+% else
+%     disp(['Using tracked image files contained in folder ' inputFolderTrackedNuclei]);
+% end
+% inputFilesSegmentation = dir([inputFolderTrackedNuclei '*.tif']);
+% 
+% %% specify the input mastodon file
+% [inputFileMastodon, inputPathMastodon]  = uigetfile('*.mastodon', 'Select the mastodon file you want to apply to the selected images');
+% 
+% %% bring mastodon file into a d_orgs like format for easier application to the image data
+% [G, metadata, tss] = import_mastodon( [inputPathMastodon inputFileMastodon] );
+% 
+% nodes = table2array(G.Nodes(:,1:5));
+% nodes(:,1) = nodes(:,1)+1;
+% nodes(:,5) = nodes(:,5)+1;
+% 
+% edges = table2array(G.Edges);
+% 
+% %% sort the edges based on their start time point
+% %% otherwise it can happen that objects are added later and start a new track
+% edges(:,end+1) = 0;
+% for i=1:size(edges,1)
+%     
+%     currentEdge = edges(i,:);
+%     
+%     object1 = nodes(currentEdge(1), :);
+%    
+%     timePoint1 = object1(5);
+%     edges(i,end) = timePoint1;
+% end
+% 
+% [timePoints, edgeOrder] = sort(edges(:,end), 'ascend');
+% edges = edges(edgeOrder, :);
+% 
+% visitedNodes = zeros(size(nodes,1),1);
+% visitedEdges = zeros(size(edges,1),1);
+% 
+% d_orgs = zeros(size(nodes,1), 6);
+% for i=1:size(nodes,1)
+%     currentTimePoint = nodes(i,5);
+%     d_orgs(i, currentTimePoint, 1) = nodes(i,1);
+%     d_orgs(i, currentTimePoint, 2) = 1;
+%     d_orgs(i, currentTimePoint, 3:5) = round(nodes(i,2:4));
+% end
+% 
+% deletionIndices = zeros(size(d_orgs,1),1);
+% for i=1:size(edges,1)
+%     currentEdge = edges(i,:);
+%     
+%     object1 = nodes(currentEdge(1), :);
+%     object2 = nodes(currentEdge(2), :);
+%     
+%     timePoint1 = object1(5);
+%     timePoint2 = object2(5);
+%     
+%     object1Index = find(d_orgs(:,timePoint1,1) == currentEdge(1));
+%     object2Index = find(d_orgs(:,timePoint2,1) == currentEdge(2));
+%         
+%     d_orgs(object1Index, timePoint2, :) = d_orgs(object2Index, timePoint2, :);
+%     d_orgs(object2Index, timePoint2, :) = 0;
+%     
+%     deletionIndices(object2Index) = 1;
+% end
+% 
+% %% remove empty rows
+% d_orgs(deletionIndices > 0, :, :) = [];
+% 
+% %% renumber indices that belong to a single track
+% for i=1:size(d_orgs,1)
+%     validIndices = squeeze(d_orgs(i,:,1)) > 0;
+%     d_orgs(i,validIndices,1) = i;
+% end
+% 
+% %% define z-spacing (only needed if isotropic images should be processed).
+% zspacing = 1; %% 0.325 x 0.325 x 0.8 µm
+% 
+% %% specify indices of the features in the region props table
+% volumeIndex = 1;
+% centroidIndex = 2:4;
+% equivDiameterIndex = 5;
+% principalAxisLength = 6:8;
+% orientationIndex = 9:11;
+% convexVolumeIndex = 12;
+% solidityIndex = 13;
+% surfaceAreaIndex = 14;
+% 
+% %% initialize the previous labels array
+% previousLabels = [];
+% 
+% %% save options
+% clear options;
+% options.compress = 'lzw';
+% options.overwrite = true;
 
 %% process all image files sqeuentially
-parfor i=1:length(inputFilesSegmentation)
+for i=338%1:length(inputFilesSegmentation)
     
     %% read the current input image
     currentSegmentationImage = loadtiff([inputFolderTrackedNuclei inputFilesSegmentation(i).name]);
@@ -184,16 +184,12 @@ parfor i=1:length(inputFilesSegmentation)
         
         currentCentroid = round(squeeze(d_orgs(j,i,3:5)));
         oldLabel = currentSegmentationImage(currentCentroid(2), currentCentroid(1), currentCentroid(3));
-        
-        visitedIndices(oldLabel) = 1;
-        
-        if (j == 10 || j == 33 || oldLabel == 33)
-            test = 1;
-        end
-        
+                
         if (oldLabel == 0)
             resultImage(currentCentroid(2), currentCentroid(1), currentCentroid(3)) = j;
             continue;
+        else
+            visitedIndices(oldLabel) = 1;
         end
         
         %% get the labels of the current region
