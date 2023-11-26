@@ -1,0 +1,9 @@
+--output C:/Users/stegmaier/Downloads/Test/
+--input 0, X:/Data/KnautNYU_PrimordiumCellSegmentation/20231026_prim-mCherry_H2A-GFP_tracking_0.5_hour/Membranes/, 3, float
+--input 1, X:/Data/KnautNYU_PrimordiumCellSegmentation/20231026_prim-mCherry_H2A-GFP_tracking_0.5_hour/Nuclei/, 3, float
+--xml D:/Programming/Repositories/PrimordiumSegmentation/XPIWITPipelines/BasinImageGeneration.xml
+--seed 0
+--lockfile off
+--subfolder filterid, filtername
+--outputformat imagename, filtername
+--end

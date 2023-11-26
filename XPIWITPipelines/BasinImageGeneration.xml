@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xpiwit>
+    <pipeline>
+        <item item_id="item_0003">
+            <name>SubtractImageFilter</name>
+            <description>Pixel-wise subtraction of two images.</description>
+            <input number_images="2" number_meta="0">
+                <image item_id_ref="item_0001" number_of_output="1" type_number="2"/>
+                <image item_id_ref="item_0002" number_of_output="1" type_number="2"/>
+            </input>
+            <output number_images="1" number_meta="0">
+                <image number="1"/>
+            </output>
+            <arguments>
+                <parameter key="WriteResult" value="1" type="3" description="Write output to disk"/>
+                <parameter key="WriteMetaData" value="1" type="3" description="Write meta data to disk"/>
+                <parameter key="MaxThreads" value="-1" type="2" description="Define the maximum number of concurrent threads. Setting it to -1 uses all available cores (default)."/>
+                <parameter key="Compression" value="1" type="3" description="If set to 1, compression is used for file saving."/>
+                <parameter key="Precision" value="16" type="2" description="Switch between uint8 and uint16 result image types."/>
+            </arguments>
+        </item>
+        <item item_id="item_0001">
+            <name>ImageReader</name>
+            <description>Reads image from disk</description>
+            <input number_images="1" number_meta="0">
+                <image item_id_ref="cmd" number_of_output="0"/>
+            </input>
+            <output number_images="1" number_meta="0">
+                <image number="1"/>
+            </output>
+            <arguments>
+                <parameter key="WriteResult" value="1" type="3" description="Write output to disk"/>
+                <parameter key="WriteMetaData" value="1" type="3" description="Write meta data to disk"/>
+                <parameter key="MaxThreads" value="-1" type="2" description="Define the maximum number of concurrent threads. Setting it to -1 uses all available cores (default)."/>
+                <parameter key="Compression" value="1" type="3" description="If set to 1, compression is used for file saving."/>
+                <parameter key="Precision" value="16" type="2" description="Switch between uint8 and uint16 result image types."/>
+                <parameter key="UseSeriesReader" value="0" type="3" description="Combine separate 2D images to one 3D stack. Drag&amp;drop first file of the series and substitute the series index by %0nd, with n being the number of digits."/>
+                <parameter key="SeriesMinIndex" value="0" type="2" description="Start index for the series reader"/>
+                <parameter key="SeriesMaxIndex" value="499" type="2" description="End index for the series reader"/>
+                <parameter key="SeriesIncrement" value="1" type="2" description="Index increment for the series reader"/>
+                <parameter key="SpacingX" value="1" type="1" description="Original spacing in the first dimension"/>
+                <parameter key="SpacingY" value="1" type="1" description="Original spacing in the second dimension"/>
+                <parameter key="SpacingZ" value="1" type="1" description="Original spacing in the third dimension"/>
+                <parameter key="InputMinimumValue" value="0" type="1" description="Minimum intensity value of the input image. Set to -1 for auto detection"/>
+                <parameter key="InputMaximumValue" value="65535" type="1" description="Maximum intensity value of the input image. Set to -1 for auto detection"/>
+                <parameter key="NormalizeIntensity" value="1" type="3" description="If enabled, rescales the input intensities to float range [0, 1]. Only disable for LabelImages."/>
+            </arguments>
+        </item>
+        <item item_id="item_0002">
+            <name>ImageReader</name>
+            <description>Reads image from disk</description>
+            <input number_images="1" number_meta="0">
+                <image item_id_ref="cmd" number_of_output="1"/>
+            </input>
+            <output number_images="1" number_meta="0">
+                <image number="1"/>
+            </output>
+            <arguments>
+                <parameter key="WriteResult" value="1" type="3" description="Write output to disk"/>
+                <parameter key="WriteMetaData" value="1" type="3" description="Write meta data to disk"/>
+                <parameter key="MaxThreads" value="-1" type="2" description="Define the maximum number of concurrent threads. Setting it to -1 uses all available cores (default)."/>
+                <parameter key="Compression" value="1" type="3" description="If set to 1, compression is used for file saving."/>
+                <parameter key="Precision" value="16" type="2" description="Switch between uint8 and uint16 result image types."/>
+                <parameter key="UseSeriesReader" value="0" type="3" description="Combine separate 2D images to one 3D stack. Drag&amp;drop first file of the series and substitute the series index by %0nd, with n being the number of digits."/>
+                <parameter key="SeriesMinIndex" value="0" type="2" description="Start index for the series reader"/>
+                <parameter key="SeriesMaxIndex" value="499" type="2" description="End index for the series reader"/>
+                <parameter key="SeriesIncrement" value="1" type="2" description="Index increment for the series reader"/>
+                <parameter key="SpacingX" value="1" type="1" description="Original spacing in the first dimension"/>
+                <parameter key="SpacingY" value="1" type="1" description="Original spacing in the second dimension"/>
+                <parameter key="SpacingZ" value="1" type="1" description="Original spacing in the third dimension"/>
+                <parameter key="InputMinimumValue" value="0" type="1" description="Minimum intensity value of the input image. Set to -1 for auto detection"/>
+                <parameter key="InputMaximumValue" value="65535" type="1" description="Maximum intensity value of the input image. Set to -1 for auto detection"/>
+                <parameter key="NormalizeIntensity" value="1" type="3" description="If enabled, rescales the input intensities to float range [0, 1]. Only disable for LabelImages."/>
+            </arguments>
+        </item>
+        <item item_id="item_0004">
+            <name>DiscreteGaussianImageFilter</name>
+            <description>Gaussian smothing filter. Filters the image with a gaussian kernel defined by variance.</description>
+            <input number_images="1" number_meta="0">
+                <image item_id_ref="item_0003" number_of_output="1" type_number="2"/>
+            </input>
+            <output number_images="1" number_meta="0">
+                <image number="1"/>
+            </output>
+            <arguments>
+                <parameter key="WriteResult" value="1" type="3" description="Write output to disk"/>
+                <parameter key="WriteMetaData" value="1" type="3" description="Write meta data to disk"/>
+                <parameter key="MaxThreads" value="-1" type="2" description="Define the maximum number of concurrent threads. Setting it to -1 uses all available cores (default)."/>
+                <parameter key="Compression" value="1" type="3" description="If set to 1, compression is used for file saving."/>
+                <parameter key="Precision" value="32" type="2" description="Switch between uint8 and uint16 result image types."/>
+                <parameter key="Variance" value="1.0" type="1" description="Variance of the gaussian kernel."/>
+                <parameter key="MaximumError" value="0.01" type="1" description="Maximum error of the gaussian function approximation."/>
+                <parameter key="MaximumKernelWidth" value="32" type="2" description="Maximum kernel size in pixel."/>
+                <parameter key="UseImageSpacing" value="1" type="3" description="Use the real spacing for the gaussian kernel creation."/>
+            </arguments>
+        </item>
+    </pipeline>
+</xpiwit>
