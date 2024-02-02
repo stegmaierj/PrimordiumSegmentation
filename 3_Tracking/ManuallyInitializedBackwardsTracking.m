@@ -33,7 +33,8 @@ addpath('../ThirdParty/saveastiff_4.3/');
 useRegistrationBasedCorrection = true;          %% if enabled, segmentation results are backpropagated via elastic registration results
 zscale = 2.5;                                   %% ratio of z vs. xy spacing to compute distances correctly
 clusterCutoff = 5;                              %% objects closer than this radius are merged
-numGradientSteps = 20;                           %% number of gradient descent steps made to center detections in their basins
+numGradientSteps = 20;                          %% number of gradient descent steps made to center detections in their basins
+useSegmentCentroidCorrection = false;           %% if enabled, tracked centroids are replaced with the centroid of the segment they're intersecting with. Note: doesn't work yet!
 %%%%%%%%%%%%% USER-DEFINED PARAMETERS %%%%%%%%%%%%
 
 %% specify elastix path
@@ -263,6 +264,15 @@ for t=numFrames:-1:1
             meanPosition = round(mean(squeeze(d_orgs(currentObjects, t, 3:5)), 1));
         else
             meanPosition = squeeze(d_orgs(currentObjects, t, 3:5));
+        end
+
+        %% replace the mean position with the centroid of the underlying segmentation (if a segment is hit)
+        if (useSegmentCentroidCorrection == true)
+            segmentLabel = segImage(meanPosition(1), meanPosition(2), meanPosition(3));
+
+            if (segmentLabel > 0)
+                meanPosition = round([regionProps(segmentLabel).Centroid(2), regionProps(segmentLabel).Centroid(1), regionProps(segmentLabel).Centroid(3)])';
+            end
         end
 
         %% add the object with a new tracking id or keep an existing one if available

@@ -48,7 +48,7 @@ end
 inputFiles = dir([inputFolderTrackedNuclei '*.tif']);
 
 %% define z-spacing (only needed if isotropic images should be processed).
-zspacing = 1; %% 0.325 x 0.325 x 0.8 µm 
+zspacing = 1; %% 0.325 x 0.325 x 0.8 µm
 
 %% specify indices of the features in the region props table
 volumeIndex = 1;
